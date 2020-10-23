@@ -41,6 +41,8 @@ public:
 
   using fs::FileAccess<Device>::ioctl;
 
+  Device() {}
+
   /*! \details Constructs a Device.
    *
    * Unlike fs::File, upon creation the
