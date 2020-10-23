@@ -4,6 +4,9 @@ set(SOURCES
 #  hal/Core.hpp
 #  hal/Dac.hpp
 	hal/Device.hpp
+	hal/ByteBuffer.hpp
+	hal/FrameBuffer.hpp
+	hal/FrameStream.hpp
 #  hal/Drive.hpp
 	hal/I2C.hpp
 	hal/Gpio.hpp

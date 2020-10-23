@@ -38,14 +38,6 @@ class Uart : public DeviceType<I_UART_GETVERSION>, public UartFlags {
 public:
   class Attributes {
   public:
-    /*! \details Constructs UART attributes with default settings.
-     *
-     * @param o_flags Flags for attibutes (default is
-     * UART_FLAG_SET_LINE_CODING_DEFAULT)
-     * @param freq UART frequency (bitrate; default is 115200)
-     * @param width UART byte width (default is 8)
-     *
-     */
     Attributes() {
       set_flags(Flags::set_line_coding_default);
       set_frequency(115200);
@@ -111,6 +103,12 @@ public:
 
   static int get_version(Device &device) {
     return device.ioctl(I_UART_GETVERSION, nullptr).return_value();
+  }
+
+  static Device::Ioctl set_attributes(Attributes &attr) {
+    return Device::Ioctl()
+        .set_request(I_UART_SETATTR)
+        .set_argument(&attr.m_attributes);
   }
 
   static Device::Ioctl put(char c) {
