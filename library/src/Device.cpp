@@ -8,7 +8,7 @@ using namespace hal;
 
 Device::Device(var::StringView path,
                fs::OpenMode open_mode FSAPI_LINK_DECLARE_DRIVER_LAST)
-    : FileAccess(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+    : m_file(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
 #ifndef __link
 const Device &Device::read(fs::Aio &aio) const {

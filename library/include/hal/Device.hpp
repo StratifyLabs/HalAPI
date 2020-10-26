@@ -10,68 +10,126 @@
 
 namespace hal {
 
-/*! \brief Device Class
- * \details This is a device class used for accessing MCU peripherals and
- * other devices.
- *
- * - MCU peripheral hardware (most devices have a class that inherits this
- * class)
- * - Devices with built-in drivers (see "/dev" folder on the device)
- *
- * \code
- * #include <sapi/hal.hpp>
- *
- * int main(int argc, char * argv[]){
- *   char buffer[16];
- *   Device device;
- *   device.open("/dev/fifo", Device::RDWR); //open the system fifo (if it
- * exists) device.read(0, buffer, 16);             //read 16 bytes from channel
- * (location) 0 device.close();                         //close the SPI (power
- * it off) return 0;
- * }
- * \endcode
- *
- */
-class Device : public fs::FileAccess<Device> {
+class Device : public api::ExecutionContext {
 public:
   class Channel {
     API_ACCESS_FUNDAMENTAL(Channel, u32, location, 0);
     API_ACCESS_FUNDAMENTAL(Channel, u32, value, 0);
   };
 
-  using fs::FileAccess<Device>::ioctl;
+  using Write = fs::File::Write;
+  using Whence = fs::File::Whence;
+  using Ioctl = fs::File::Ioctl;
 
   Device() {}
 
-  /*! \details Constructs a Device.
-   *
-   * Unlike fs::File, upon creation the
-   * is_close_on_destruct() flag is cleared for
-   * all devices (and hal::Periph). In
-   * order to close a device, close() must
-   * be called explicitly.
-   *
-   * This is the desired behavior because
-   * it is common to create more than one hal::Device
-   * object to access the same hardware in different contexts.
-   *
-   */
-  Device(
-    var::StringView path,
-    fs::OpenMode open_mode
-    = fs::OpenMode::read_write() FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST);
+  Device(var::StringView path,
+         fs::OpenMode open_mode = fs::OpenMode::read_write()
+             FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST);
 
-  const Device &
-  set_interrupt_priority(int priority, int request = I_MCU_SETACTION) const;
+  const Device &set_interrupt_priority(int priority,
+                                       int request = I_MCU_SETACTION) const;
+
+  const Device &read(void *buf, size_t size) const {
+    m_file.read(buf, size);
+    return *this;
+  }
+
+  Device &read(void *buf, size_t size) {
+    m_file.read(buf, size);
+    return *this;
+  }
+
+  const Device &read(var::View view) const {
+    m_file.read(view);
+    return *this;
+  }
+
+  Device &read(var::View view) {
+    m_file.read(view);
+    return *this;
+  }
+
+  const Device &write(const void *buf, size_t size) const {
+    m_file.write(buf, size);
+    return *this;
+  }
+
+  Device &write(const void *buf, size_t size) {
+    m_file.write(buf, size);
+    return *this;
+  }
+
+  const Device &write(var::View view) const {
+    m_file.write(view);
+    return *this;
+  }
+
+  Device &write(var::View view) {
+    m_file.write(view);
+    return *this;
+  }
+
+  const Device &write(const fs::FileObject &source_file,
+                      const Write &options = Write()) const {
+    m_file.write(source_file, options);
+    return *this;
+  }
+
+  Device &write(const fs::FileObject &source_file,
+                const Write &options = Write()) {
+    m_file.write(source_file, options);
+    return *this;
+  }
+
+  const Device &write(const fs::FileObject &source_file,
+                      const var::Transformer &transformer,
+                      const Write &options = Write()) const {
+    m_file.write(source_file, transformer, options);
+    return *this;
+  }
+
+  Device &write(const fs::FileObject &source_file,
+                const var::Transformer &transformer,
+                const Write &options = Write()) {
+    m_file.write(source_file, transformer, options);
+    return *this;
+  }
+
+  const Device &seek(int location, Whence whence = Whence::set) const {
+    m_file.seek(location, whence);
+    return *this;
+  }
+
+  Device &seek(int location, fs::File::Whence whence = Whence::set) {
+    m_file.seek(location, whence);
+    return *this;
+  }
+
+  const Device &ioctl(int request, void *arg) const {
+    ioctl(request, arg);
+    return *this;
+  }
+
+  Device &ioctl(int request, void *arg) {
+    ioctl(request, arg);
+    return *this;
+  }
+
+  const Device &ioctl(const fs::File::Ioctl &options) const {
+    ioctl(options);
+    return *this;
+  }
+
+  Device &ioctl(const fs::File::Ioctl &options) {
+    ioctl(options);
+    return *this;
+  }
+
+  Device &&move() { return std::move(*this); }
 
 #if !defined __link
-  /*! \details Configures the device to send a signal when an event happens.
-   *
-   * @param signal The signal to send
-   * @param o_events A bitmask of events which will cause the signal to be sent
-   * @param channel The hardware channel to listen for events on
-   *
-   */
+
   const Device &set_signal_action(
     const DeviceSignal &signal,
     const DeviceSignal::CreateAction &options) {
@@ -79,20 +137,7 @@ public:
     return ioctl(I_MCU_SETACTION, &action);
   }
 
-  /*! \details Reads the device asynchronously.
-   *
-   * @param aio A reference to the fs::Aio object to use for reading
-   *
-   * \sa fs::Aio
-   */
   const Device &read(fs::Aio &aio) const;
-
-  /*! \details Writes the device asynchronously.
-   *
-   * @param aio A reference to the fs::Aio object to use for writing
-   *
-   * \sa fs::Aio
-   */
   const Device &write(fs::Aio &aio) const;
 
   using fs::FileAccess<Device>::read;
@@ -112,6 +157,8 @@ public:
 #endif
 
 protected:
+private:
+  fs::File m_file;
 };
 
 template <int VersionRequest> class DeviceType {
