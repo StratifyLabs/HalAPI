@@ -55,7 +55,7 @@ API_OR_NAMED_FLAGS_OPERATOR(SpiFlags, Flags)
  * }
  * \endcode
  */
-class Spi : public DeviceType<I_SPI_GETVERSION>, public SpiFlags {
+class Spi : public DeviceAccess<Spi>, public SpiFlags {
 public:
   class Info {
   public:
@@ -117,37 +117,23 @@ public:
     mutable spi_attr_t m_attributes;
   };
 
-  static Device::Ioctl set_attributes(const Attributes &attributes) {
-    return Device::Ioctl()
-      .set_request(I_SPI_SETATTR)
-      .set_argument(&attributes.m_attributes);
+  Spi(const var::StringView device) : DeviceAccess(device) {}
+
+  Spi &set_attributes(const Attributes &attributes) {
+    return ioctl(I_SPI_SETATTR, &attributes.m_attributes);
   }
 
-  static Device::Ioctl set_attributes() {
-    return Device::Ioctl().set_request(I_SPI_SETATTR);
+  const Spi &set_attributes(const Attributes &attributes) const {
+    return ioctl(I_SPI_SETATTR, &attributes.m_attributes);
   }
 
-  static Device::Ioctl get_info(Info &info) {
-    return Device::Ioctl()
-      .set_request(I_SPI_GETINFO)
-      .set_argument(&info.m_info);
+  Info get_info() {
+    spi_info_t info;
+    ioctl(I_SPI_GETINFO, &info);
+    return Info(info);
   }
 
-  static Device::Ioctl swap(u32 value) {
-    return Device::Ioctl()
-      .set_request(I_SPI_SWAP)
-      .set_argument(MCU_INT_CAST(value));
-  }
-
-  static int swap(const Device &device, u32 value) {
-    return device.ioctl(swap(value)).return_value();
-  }
-
-  static Info get_info(const Device &device) {
-    Info info;
-    device.ioctl(get_info(info));
-    return info;
-  }
+  Spi &swap(u32 value) { return ioctl(I_SPI_SWAP, MCU_INT_CAST(value)); }
 
 private:
 };

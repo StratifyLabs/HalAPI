@@ -34,7 +34,7 @@ public:
 
 API_OR_NAMED_FLAGS_OPERATOR(UartFlags, Flags)
 
-class Uart : public DeviceType<I_UART_GETVERSION>, public UartFlags {
+class Uart : public DeviceAccess<Uart>, public UartFlags {
 public:
   class Attributes {
   public:
@@ -101,40 +101,30 @@ public:
     uart_info_t m_info;
   };
 
-  static int get_version(Device &device) {
-    return device.ioctl(I_UART_GETVERSION, nullptr).return_value();
+  Uart(const var::StringView device) : DeviceAccess(device) {}
+
+  int get_version() const {
+    return ioctl(I_UART_GETVERSION, nullptr).return_value();
   }
 
-  static Device::Ioctl set_attributes(Attributes &attr) {
-    return Device::Ioctl()
-        .set_request(I_UART_SETATTR)
-        .set_argument(&attr.m_attributes);
+  Uart &set_attributes(const Attributes &attr) {
+    return ioctl(I_UART_SETATTR, (void *)&attr.m_attributes);
   }
 
-  static Device::Ioctl put(char c) {
-    return Device::Ioctl().set_request(I_UART_PUT).set_argument(&c);
-  }
+  Uart &put(char c) { return ioctl(I_UART_PUT, &c); }
 
-  static Device::Ioctl flush() {
-    return Device::Ioctl().set_request(I_UART_FLUSH);
-  }
+  Uart &flush() { return ioctl(I_UART_FLUSH, nullptr); }
 
-  static char get(const Device &device) {
+  char get() const {
     char c;
-    device.ioctl(I_UART_GET, &c);
+    ioctl(I_UART_GET, &c);
     return c;
   }
 
-  static Device::Ioctl get_info(Info &info) {
-    return Device::Ioctl()
-      .set_request(I_UART_GETINFO)
-      .set_argument(&info.m_info);
-  }
-
-  static Info get_info(const Device &device) {
-    Info info;
-    device.ioctl(get_info(info));
-    return info;
+  Info get_info() const {
+    uart_info_t info;
+    ioctl(I_UART_GETINFO, &info);
+    return Info(info);
   }
 
 private:

@@ -8,9 +8,8 @@
 
 #include <sos/fs/devfs.h>
 
-#include "Device.hpp"
-#include "thread/Signal.hpp"
-#include "thread/Thread.hpp"
+#include <thread/Signal.hpp>
+#include <thread/Thread.hpp>
 
 namespace hal {
 

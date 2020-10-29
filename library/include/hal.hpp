@@ -5,15 +5,15 @@
 
 namespace hal {}
 
+#include "hal/ByteBuffer.hpp"
 #include "hal/Device.hpp"
+#include "hal/FrameBuffer.hpp"
+#include "hal/FrameStream.hpp"
+#include "hal/Gpio.hpp"
 #include "hal/I2C.hpp"
+#include "hal/Pin.hpp"
 #include "hal/Spi.hpp"
 #include "hal/Uart.hpp"
-
-#if !defined __link
-#include "hal/DisplayDevice.hpp"
-#include "hal/DeviceSignal.hpp"
-#endif
 
 using namespace hal;
 

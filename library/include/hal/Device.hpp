@@ -10,155 +10,141 @@
 
 namespace hal {
 
-class Device : public api::ExecutionContext {
+class DeviceObject : public api::ExecutionContext {
 public:
   class Channel {
     API_ACCESS_FUNDAMENTAL(Channel, u32, location, 0);
     API_ACCESS_FUNDAMENTAL(Channel, u32, value, 0);
   };
 
-  using Write = fs::File::Write;
-  using Whence = fs::File::Whence;
-  using Ioctl = fs::File::Ioctl;
+  DeviceObject() {}
 
-  Device() {}
+  DeviceObject(var::StringView path,
+               fs::OpenMode open_mode = fs::OpenMode::read_write()
+                   FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST);
 
-  Device(var::StringView path,
-         fs::OpenMode open_mode = fs::OpenMode::read_write()
-             FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST);
-
-  const Device &set_interrupt_priority(int priority,
-                                       int request = I_MCU_SETACTION) const;
-
-  const Device &read(void *buf, size_t size) const {
-    m_file.read(buf, size);
+  DeviceObject(DeviceObject &&a) { std::swap(m_file, a.m_file); }
+  DeviceObject &operator=(DeviceObject &&a) {
+    std::swap(m_file, a.m_file);
     return *this;
   }
-
-  Device &read(void *buf, size_t size) {
-    m_file.read(buf, size);
-    return *this;
-  }
-
-  const Device &read(var::View view) const {
-    m_file.read(view);
-    return *this;
-  }
-
-  Device &read(var::View view) {
-    m_file.read(view);
-    return *this;
-  }
-
-  const Device &write(const void *buf, size_t size) const {
-    m_file.write(buf, size);
-    return *this;
-  }
-
-  Device &write(const void *buf, size_t size) {
-    m_file.write(buf, size);
-    return *this;
-  }
-
-  const Device &write(var::View view) const {
-    m_file.write(view);
-    return *this;
-  }
-
-  Device &write(var::View view) {
-    m_file.write(view);
-    return *this;
-  }
-
-  const Device &write(const fs::FileObject &source_file,
-                      const Write &options = Write()) const {
-    m_file.write(source_file, options);
-    return *this;
-  }
-
-  Device &write(const fs::FileObject &source_file,
-                const Write &options = Write()) {
-    m_file.write(source_file, options);
-    return *this;
-  }
-
-  const Device &write(const fs::FileObject &source_file,
-                      const var::Transformer &transformer,
-                      const Write &options = Write()) const {
-    m_file.write(source_file, transformer, options);
-    return *this;
-  }
-
-  Device &write(const fs::FileObject &source_file,
-                const var::Transformer &transformer,
-                const Write &options = Write()) {
-    m_file.write(source_file, transformer, options);
-    return *this;
-  }
-
-  const Device &seek(int location, Whence whence = Whence::set) const {
-    m_file.seek(location, whence);
-    return *this;
-  }
-
-  Device &seek(int location, fs::File::Whence whence = Whence::set) {
-    m_file.seek(location, whence);
-    return *this;
-  }
-
-  const Device &ioctl(int request, void *arg) const {
-    ioctl(request, arg);
-    return *this;
-  }
-
-  Device &ioctl(int request, void *arg) {
-    ioctl(request, arg);
-    return *this;
-  }
-
-  const Device &ioctl(const fs::File::Ioctl &options) const {
-    ioctl(options);
-    return *this;
-  }
-
-  Device &ioctl(const fs::File::Ioctl &options) {
-    ioctl(options);
-    return *this;
-  }
-
-  Device &&move() { return std::move(*this); }
 
 #if !defined __link
-
-  const Device &set_signal_action(
-    const DeviceSignal &signal,
-    const DeviceSignal::CreateAction &options) {
-    mcu_action_t action = signal.create_action(options);
-    return ioctl(I_MCU_SETACTION, &action);
-  }
-
-  const Device &read(fs::Aio &aio) const;
-  const Device &write(fs::Aio &aio) const;
-
-  using fs::FileAccess<Device>::read;
-  using fs::FileAccess<Device>::write;
-
-  const Device &cancel_read(int channel = 0) const;
-  const Device &cancel_write(int channel = 0) const;
-  const Device &cancel(int channel, int o_events) const;
 
   class Transfer {
     API_AC(Transfer, var::View, source);
     API_AC(Transfer, var::View, destination);
   };
 
-  const Device &transfer(const Transfer &options) const;
+protected:
+  void set_interrupt_priority(int priority,
+                              int request = I_MCU_SETACTION) const;
+
+  void set_signal_action(const DeviceSignal &signal,
+                         const DeviceSignal::CreateAction &options) {
+    mcu_action_t action = signal.create_action(options);
+    m_file.ioctl(I_MCU_SETACTION, &action);
+  }
+
+  void read(fs::Aio &aio) const;
+  void write(fs::Aio &aio) const;
+
+  void cancel_read(int channel = 0) const;
+  void cancel_write(int channel = 0) const;
+  void cancel(int channel, int o_events) const;
+
+  void transfer(const Transfer &options) const;
 
 #endif
 
-protected:
-private:
   fs::File m_file;
+
+private:
+};
+
+template <class Derived>
+class DeviceAccess : public DeviceObject, public fs::FileMemberAccess<Derived> {
+public:
+  DeviceAccess() : fs::FileMemberAccess<Derived>(m_file) {}
+
+  DeviceAccess(const var::StringView path,
+               fs::OpenMode open_mode = fs::OpenMode::read_write()
+                   FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+      : DeviceObject(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST),
+        fs::FileMemberAccess<Derived>(m_file) {}
+
+  const Derived &cancel(int channel, int o_events) const {
+    DeviceObject::cancel(channel, o_events);
+    return static_cast<const Derived &>(*this);
+  }
+
+  Derived &cancel(int channel, int o_events) {
+    DeviceObject::cancel(channel, o_events);
+    return static_cast<const Derived &>(*this);
+  }
+
+  const Derived &cancel_read(int channel = 0) const {
+    DeviceObject::cancel_read(channel);
+    return static_cast<const Derived &>(*this);
+  }
+
+  Derived &cancel_read(int channel = 0) {
+    DeviceObject::cancel_read(channel);
+    return static_cast<const Derived &>(*this);
+  }
+
+  const Derived &cancel_write(int channel = 0) const {
+    DeviceObject::cancel_write(channel);
+    return static_cast<const Derived &>(*this);
+  }
+
+  Derived &cancel_write(int channel = 0) {
+    DeviceObject::cancel_write(channel);
+    return static_cast<const Derived &>(*this);
+  }
+
+  using fs::FileMemberAccess<Derived>::read;
+  using fs::FileMemberAccess<Derived>::write;
+
+  const Derived &read(fs::Aio &aio) const {
+    DeviceObject::read(aio);
+    return static_cast<const Derived &>(*this);
+  }
+
+  Derived &read(fs::Aio &aio) {
+    DeviceObject::read(aio);
+    return static_cast<const Derived &>(*this);
+  }
+
+  const Derived &write(fs::Aio &aio) const {
+    DeviceObject::write(aio);
+    return static_cast<const Derived &>(*this);
+  }
+
+  Derived &write(fs::Aio &aio) {
+    DeviceObject::write(aio);
+    return static_cast<const Derived &>(*this);
+  }
+
+  const Derived &transfer(const Transfer &options) const {
+    DeviceObject::transfer(options);
+    return static_cast<const Derived &>(*this);
+  }
+
+  Derived &transfer(const Transfer &options) {
+    DeviceObject::transfer(options);
+    return static_cast<const Derived &>(*this);
+  }
+};
+
+class Device : public DeviceAccess<Device> {
+public:
+  Device() {}
+
+  Device(var::StringView path,
+         fs::OpenMode open_mode = fs::OpenMode::read_write()
+             FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+      : DeviceAccess(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 };
 
 template <int VersionRequest> class DeviceType {

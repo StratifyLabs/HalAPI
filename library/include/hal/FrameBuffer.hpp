@@ -9,7 +9,7 @@
 
 namespace hal {
 
-class FrameBuffer : public Device {
+class FrameBuffer : public DeviceAccess<FrameBuffer> {
 public:
   class Info {
   public:
@@ -49,28 +49,18 @@ public:
     ffifo_attr_t m_attributes;
   };
 
-  FrameBuffer();
+  FrameBuffer(const var::StringView device) : DeviceAccess(device) {}
 
-  static Device::Ioctl set_attributes(Attributes &attr) {
-    return Device::Ioctl()
-        .set_request(I_FFIFO_SETATTR)
-        .set_argument(&attr.m_attributes);
+  const FrameBuffer &set_attributes(Attributes &attr) const {
+    return ioctl(I_FFIFO_SETATTR, &attr.m_attributes);
   }
 
-  static Device::Ioctl flush() {
-    return Device::Ioctl().set_request(I_FFIFO_FLUSH);
-  }
+  const FrameBuffer &flush() const { return ioctl(I_FFIFO_FLUSH, nullptr); }
 
-  static Device::Ioctl get_info(Info &info) {
-    return Device::Ioctl()
-        .set_request(I_FFIFO_GETINFO)
-        .set_argument(&info.m_info);
-  }
-
-  static Info get_info(const Device &device) {
-    Info info;
-    device.ioctl(get_info(info));
-    return info;
+  Info get_info() const {
+    ffifo_info_t info;
+    ioctl(I_FFIFO_GETINFO, &info);
+    return Info(info);
   }
 };
 

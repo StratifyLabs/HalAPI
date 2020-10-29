@@ -13,6 +13,7 @@ namespace hal {
 class GpioFlags {
 public:
   enum class Flags {
+    null = 0,
     set_input /*! Sets the pinmask as input */ = PIO_FLAG_SET_INPUT,
     set_output /*! Sets the pinmask as output */ = PIO_FLAG_SET_OUTPUT,
     is_pullup /*! When setting as input, enables the pullup */
@@ -60,7 +61,7 @@ public:
 
 API_OR_NAMED_FLAGS_OPERATOR(GpioFlags, Flags)
 
-class Gpio : public DeviceType<I_PIO_GETVERSION>, public GpioFlags {
+class Gpio : public DeviceAccess<Gpio>, public GpioFlags {
 public:
   class Attributes {
   public:
@@ -76,6 +77,7 @@ public:
       m_attributes.o_flags = static_cast<u32>(value);
       return *this;
     }
+
     Attributes &set_pinmask(u32 value) {
       m_attributes.o_pinmask = value;
       return *this;
@@ -86,38 +88,24 @@ public:
     pio_attr_t m_attributes;
   };
 
-  static Device::Ioctl set_mask(u32 mask) {
-    return Device::Ioctl()
-      .set_request(I_PIO_SETMASK)
-      .set_argument(MCU_INT_CAST(mask));
+  Gpio(const var::StringView device) : DeviceAccess(device) {}
+
+  Gpio &set_attributes(const Attributes &attributes) {
+    return ioctl(I_PIO_SETATTR, (void *)&attributes.m_attributes);
+  }
+  Gpio &set_mask(u32 mask) { return ioctl(I_PIO_SETMASK, MCU_INT_CAST(mask)); }
+  Gpio &clear_mask(u32 mask) {
+    return ioctl(I_PIO_CLRMASK, MCU_INT_CAST(mask));
+  }
+  Gpio &assign(u32 value) {
+    return set_attributes(Attributes(Flags::assign, value));
   }
 
-  static Device::Ioctl clear_mask(u32 mask) {
-    return Device::Ioctl()
-      .set_request(I_PIO_CLRMASK)
-      .set_argument(MCU_INT_CAST(mask));
-  }
-
-  static Device::Ioctl assign(u32 value) {
-    Attributes a(Flags::assign, value);
-    return Device::Ioctl().set_request(I_PIO_SET).set_argument(
-      &a.m_attributes);
-  }
-
-  static Device::Ioctl set_value(u32 value) {
-    return Device::Ioctl().set_request(I_PIO_SET).set_argument(
-      MCU_INT_CAST(value));
-  }
-
-  static Device::Ioctl get_value() {
-    return Device::Ioctl().set_request(I_PIO_GET);
-  }
-
-  static u32 get_value(Device &device) {
-    return device.ioctl(get_value()).return_value();
-  }
+  Gpio &set_value(u32 value) { return ioctl(I_PIO_SET, MCU_INT_CAST(value)); }
+  u32 get_value() { return ioctl(I_PIO_GET, nullptr).return_value(); }
 
 private:
+  const Device *m_device;
 };
 
 } // namespace hal

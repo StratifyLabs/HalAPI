@@ -1,5 +1,5 @@
-/*! \file */ // Copyright 2011-2020 Tyler Gilbert and Stratify Labs, Inc; see
-             // LICENSE.md for rights.
+// Copyright 2011-2020 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md for
+// rights.
 #ifndef HALAPI_HAL_STREAMFFIFO_HPP_
 #define HALAPI_HAL_STREAMFFIFO_HPP_
 
@@ -24,7 +24,7 @@ public:
 
 API_OR_NAMED_FLAGS_OPERATOR(FrameStreamFlags, Flags)
 
-class FrameStream : public Device, public FrameStreamFlags {
+class FrameStream : public DeviceAccess<FrameStream>, public FrameStreamFlags {
 public:
   class ChannelInfo {
   public:
@@ -105,27 +105,26 @@ public:
     stream_ffifo_attr_t m_attributes;
   };
   FrameStream();
+  FrameStream(const var::StringView path) : DeviceAccess(path) {}
 
-  int start();
-  int stop();
-  int flush();
-
-  static Device::Ioctl set_attributes(Attributes &attr) {
-    return Device::Ioctl()
-        .set_request(I_STREAM_FFIFO_SETATTR)
-        .set_argument(&attr.m_attributes);
+  const FrameStream &start() const {
+    return set_attributes(Attributes().set_start());
+  }
+  const FrameStream &stop() const {
+    return set_attributes(Attributes().set_stop());
+  }
+  const FrameStream &flush() const {
+    return set_attributes(Attributes().set_flush());
   }
 
-  static Device::Ioctl get_info(Info &info) {
-    return Device::Ioctl()
-        .set_request(I_STREAM_FFIFO_GETINFO)
-        .set_argument(&info.m_info);
+  const FrameStream &set_attributes(const Attributes &attr) const {
+    return ioctl(I_STREAM_FFIFO_SETATTR, (void *)&attr.m_attributes);
   }
 
-  static Info get_info(const Device &device) {
-    Info info;
-    device.ioctl(get_info(info));
-    return info;
+  Info get_info() const {
+    stream_ffifo_info_t info;
+    ioctl(I_STREAM_FFIFO_GETINFO, &info);
+    return Info(info);
   }
 };
 

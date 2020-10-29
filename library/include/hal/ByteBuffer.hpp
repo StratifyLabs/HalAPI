@@ -27,7 +27,7 @@ public:
 
 API_OR_NAMED_FLAGS_OPERATOR(ByteBufferFlags, Flags)
 
-class ByteBuffer : public hal::Device, public ByteBufferFlags {
+class ByteBuffer : public DeviceAccess<ByteBuffer>, public ByteBufferFlags {
 public:
   /*! \brief Fifo Attributes Class
    *
@@ -80,24 +80,16 @@ public:
     fifo_attr_t m_attributes;
   };
 
-  ByteBuffer();
+  ByteBuffer(const var::StringView device) : DeviceAccess(device) {}
 
-  static Device::Ioctl set_attributes(Attributes &attr) {
-    return Device::Ioctl()
-        .set_request(I_FIFO_SETATTR)
-        .set_argument(&attr.m_attributes);
+  ByteBuffer &set_attributes(Attributes &attr) {
+    return ioctl(I_FIFO_SETATTR, &attr.m_attributes);
   }
 
-  static Device::Ioctl get_info(Info &info) {
-    return Device::Ioctl()
-        .set_request(I_FIFO_GETINFO)
-        .set_argument(&info.m_info);
-  }
-
-  static Info get_info(const Device &device) {
-    Info info;
-    device.ioctl(get_info(info));
-    return info;
+  Info get_info() const {
+    fifo_info_t info;
+    ioctl(I_FIFO_GETINFO, &info);
+    return Info(info);
   }
 };
 
