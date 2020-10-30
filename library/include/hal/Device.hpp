@@ -73,6 +73,7 @@ public:
       : DeviceObject(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST),
         fs::FileMemberAccess<Derived>(m_file) {}
 
+#if !defined __link
   const Derived &cancel(int channel, int o_events) const {
     DeviceObject::cancel(channel, o_events);
     return static_cast<const Derived &>(*this);
@@ -135,6 +136,7 @@ public:
     DeviceObject::transfer(options);
     return static_cast<const Derived &>(*this);
   }
+#endif
 };
 
 class Device : public DeviceAccess<Device> {
