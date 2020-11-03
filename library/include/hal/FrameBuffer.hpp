@@ -49,7 +49,12 @@ public:
     ffifo_attr_t m_attributes;
   };
 
-  FrameBuffer(const var::StringView device) : DeviceAccess(device) {}
+  FrameBuffer() {}
+
+  FrameBuffer(
+      const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+      : DeviceAccess(device, fs::OpenMode::read_write()
+                                 FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   const FrameBuffer &set_attributes(Attributes &attr) const {
     return ioctl(I_FFIFO_SETATTR, &attr.m_attributes);

@@ -10,6 +10,7 @@ include(sos-sdk)
 
 if(NOT DEFINED IS_SDK)
 	include(StratifyAPI)
+	include(SosAPI)
 endif()
 
 project(HalAPI CXX)

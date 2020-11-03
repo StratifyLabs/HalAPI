@@ -4,6 +4,8 @@
 #ifndef HALAPI_HAL_DEVICE_HPP_
 #define HALAPI_HAL_DEVICE_HPP_
 
+#include <sos/Link.hpp>
+
 #include "DeviceSignal.hpp"
 #include "fs/Aio.hpp"
 #include "fs/File.hpp"
@@ -23,9 +25,12 @@ public:
                fs::OpenMode open_mode = fs::OpenMode::read_write()
                    FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST);
 
-  DeviceObject(DeviceObject &&a) { std::swap(m_file, a.m_file); }
+  DeviceObject(const DeviceObject &a) = delete;
+  DeviceObject &operator=(const DeviceObject &a) = delete;
+
+  DeviceObject(DeviceObject &&a) { swap(a); }
   DeviceObject &operator=(DeviceObject &&a) {
-    std::swap(m_file, a.m_file);
+    swap(a);
     return *this;
   }
 
@@ -57,9 +62,14 @@ protected:
 
 #endif
 
+protected:
+#if defined __link
+  sos::Link::File m_file;
+#else
   fs::File m_file;
+#endif
 
-private:
+  void swap(DeviceObject &a) { std::swap(m_file, a.m_file); }
 };
 
 template <class Derived>
@@ -72,6 +82,8 @@ public:
                    FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : DeviceObject(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST),
         fs::FileMemberAccess<Derived>(m_file) {}
+
+  int fileno() const { return m_file.fileno(); }
 
 #if !defined __link
   const Derived &cancel(int channel, int o_events) const {
@@ -142,6 +154,12 @@ public:
 class Device : public DeviceAccess<Device> {
 public:
   Device() {}
+
+  Device(Device &&a) { std::swap(m_file, a.m_file); }
+  Device &operator=(Device &&a) {
+    std::swap(m_file, a.m_file);
+    return *this;
+  }
 
   Device(var::StringView path,
          fs::OpenMode open_mode = fs::OpenMode::read_write()
