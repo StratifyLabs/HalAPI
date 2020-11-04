@@ -117,7 +117,9 @@ public:
     mutable spi_attr_t m_attributes;
   };
 
-  Spi(const var::StringView device) : DeviceAccess(device) {}
+  Spi(const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+      : DeviceAccess(device, fs::OpenMode::read_write()
+                                 FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   Spi &set_attributes(const Attributes &attributes) {
     return ioctl(I_SPI_SETATTR, &attributes.m_attributes);

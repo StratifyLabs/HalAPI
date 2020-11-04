@@ -116,7 +116,9 @@ public:
     i2c_info_t m_info;
   };
 
-  I2C(const var::StringView device) : DeviceAccess(device) {}
+  I2C(const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+      : DeviceAccess(device, fs::OpenMode::read_write()
+                                 FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   I2C &prepare(u8 slave_addr, Flags o_flags = Flags::prepare_ptr_data) {
     Attributes attributes

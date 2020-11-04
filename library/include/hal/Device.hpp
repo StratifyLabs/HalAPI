@@ -23,8 +23,10 @@ public:
 
   DeviceObject(var::StringView path,
                fs::OpenMode open_mode = fs::OpenMode::read_write()
-                   FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST);
+                   FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+      : m_file(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
+#if 0
   DeviceObject(const DeviceObject &a) = delete;
   DeviceObject &operator=(const DeviceObject &a) = delete;
 
@@ -33,6 +35,7 @@ public:
     swap(a);
     return *this;
   }
+#endif
 
 #if !defined __link
 
@@ -84,6 +87,8 @@ public:
         fs::FileMemberAccess<Derived>(m_file) {}
 
   int fileno() const { return m_file.fileno(); }
+
+  Derived &&move() { return static_cast<Derived &&>(std::move(*this)); }
 
 #if !defined __link
   const Derived &cancel(int channel, int o_events) const {
@@ -154,17 +159,19 @@ public:
 class Device : public DeviceAccess<Device> {
 public:
   Device() {}
-
-  Device(Device &&a) { std::swap(m_file, a.m_file); }
-  Device &operator=(Device &&a) {
-    std::swap(m_file, a.m_file);
-    return *this;
-  }
-
   Device(var::StringView path,
          fs::OpenMode open_mode = fs::OpenMode::read_write()
              FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : DeviceAccess(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+
+  Device(const Device &a) = delete;
+  Device &operator=(const Device &a) = delete;
+
+  Device(Device &&a) { swap(a); }
+  Device &operator=(Device &&a) {
+    swap(a);
+    return *this;
+  }
 };
 
 template <int VersionRequest> class DeviceType {

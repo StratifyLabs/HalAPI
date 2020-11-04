@@ -24,7 +24,10 @@ public:
     return result;
   }
 
-  Pin(const var::StringView device, u8 pin) : DeviceAccess(device) {
+  Pin(const var::StringView device,
+      u8 pin FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+      : DeviceAccess(device, fs::OpenMode::read_write()
+                                 FSAPI_LINK_INHERIT_DRIVER_LAST) {
     m_pinmask = (1 << pin);
   }
 

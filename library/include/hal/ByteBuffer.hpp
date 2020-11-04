@@ -80,7 +80,10 @@ public:
     fifo_attr_t m_attributes;
   };
 
-  ByteBuffer(const var::StringView device) : DeviceAccess(device) {}
+  ByteBuffer(
+      const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+      : DeviceAccess(device, fs::OpenMode::read_write()
+                                 FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   ByteBuffer &set_attributes(Attributes &attr) {
     return ioctl(I_FIFO_SETATTR, &attr.m_attributes);

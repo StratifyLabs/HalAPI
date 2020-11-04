@@ -105,7 +105,10 @@ public:
     stream_ffifo_attr_t m_attributes;
   };
   FrameStream();
-  FrameStream(const var::StringView path) : DeviceAccess(path) {}
+  FrameStream(
+      const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+      : DeviceAccess(device, fs::OpenMode::read_write()
+                                 FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   const FrameStream &start() const {
     return set_attributes(Attributes().set_start());
