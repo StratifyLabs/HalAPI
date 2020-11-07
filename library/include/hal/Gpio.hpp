@@ -89,8 +89,7 @@ public:
   };
 
   Gpio(const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, fs::OpenMode::read_write()
-                                 FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+      : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   Gpio &set_attributes(const Attributes &attributes) {
     return ioctl(I_PIO_SETATTR, (void *)&attributes.m_attributes);

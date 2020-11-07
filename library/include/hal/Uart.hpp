@@ -102,8 +102,7 @@ public:
   };
 
   Uart(const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, fs::OpenMode::read_write()
-                                 FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+      : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   int get_version() const {
     return ioctl(I_UART_GETVERSION, nullptr).return_value();

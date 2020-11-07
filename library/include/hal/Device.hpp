@@ -10,6 +10,11 @@
 #include "fs/Aio.hpp"
 #include "fs/File.hpp"
 
+#if defined __link
+#define DEVICE_OPEN_MODE (fs::OpenMode::read_write().set_non_blocking())
+#else
+#define DEVICE_OPEN_MODE fs::OpenMode::read_write()
+#endif
 namespace hal {
 
 class DeviceObject : public api::ExecutionContext {
@@ -22,8 +27,8 @@ public:
   DeviceObject() {}
 
   DeviceObject(var::StringView path,
-               fs::OpenMode open_mode = fs::OpenMode::read_write()
-                   FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+               fs::OpenMode open_mode =
+                   DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : m_file(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
 #if 0
@@ -80,11 +85,16 @@ class DeviceAccess : public DeviceObject, public fs::FileMemberAccess<Derived> {
 public:
   DeviceAccess() : fs::FileMemberAccess<Derived>(m_file) {}
 
-  DeviceAccess(const var::StringView path,
-               fs::OpenMode open_mode = fs::OpenMode::read_write()
-                   FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+  DeviceAccess(
+      const var::StringView path,
+      fs::OpenMode open_mode = fs::OpenMode::read_write()
+#if defined __link
+                                   .set_non_blocking()
+#endif
+                                       FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : DeviceObject(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST),
-        fs::FileMemberAccess<Derived>(m_file) {}
+        fs::FileMemberAccess<Derived>(m_file) {
+  }
 
   int fileno() const { return m_file.fileno(); }
 
@@ -160,8 +170,8 @@ class Device : public DeviceAccess<Device> {
 public:
   Device() {}
   Device(var::StringView path,
-         fs::OpenMode open_mode = fs::OpenMode::read_write()
-             FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+         fs::OpenMode open_mode =
+             DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : DeviceAccess(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   Device(const Device &a) = delete;

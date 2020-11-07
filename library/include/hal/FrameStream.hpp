@@ -107,8 +107,7 @@ public:
   FrameStream();
   FrameStream(
       const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, fs::OpenMode::read_write()
-                                 FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+      : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   const FrameStream &start() const {
     return set_attributes(Attributes().set_start());
