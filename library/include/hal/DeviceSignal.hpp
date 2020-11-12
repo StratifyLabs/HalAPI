@@ -74,7 +74,7 @@ public:
     : thread::Signal(signo, sigvalue) {
     m_context.tid = thread::Thread::self();
     m_context.si_signo = static_cast<int>(signo);
-    m_context.si_sigcode = LINK_SI_USER;
+    m_context.si_sigcode = SI_USER;
     m_context.sig_value = sigvalue;
     m_context.keep = persistent == IsPersistent::yes;
   }
@@ -94,7 +94,7 @@ public:
     : thread::Signal(signo, sigvalue) {
     m_context.tid = pthread_self();
     m_context.si_signo = static_cast<int>(signo);
-    m_context.si_sigcode = LINK_SI_USER;
+    m_context.si_sigcode = SI_USER;
     m_context.sig_ptr = sigvalue;
     m_context.keep = persistent == IsPersistent::yes;
   }
