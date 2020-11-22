@@ -65,11 +65,11 @@ public:
       return *this;
     }
     Attributes &set_overflow() {
-      m_attributes.o_flags |= FIFO_FLAG_SET_WRITEBLOCK;
+      m_attributes.o_flags |= FIFO_FLAG_IS_OVERFLOW;
       return *this;
     }
     Attributes &set_writeblock() {
-      m_attributes.o_flags |= FIFO_FLAG_IS_OVERFLOW;
+      m_attributes.o_flags |= FIFO_FLAG_SET_WRITEBLOCK;
       return *this;
     }
 
