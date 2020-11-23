@@ -43,7 +43,7 @@ API_OR_NAMED_FLAGS_OPERATOR(SpiFlags, Flags)
  * \details This class gives access to a SPI port.
  *
  * \code
- * #include <sapi/hal.hpp>
+ * #include <hal.hpp>
  *
  * int main(int argc, char * argv[]){
  *   char buffer[16];
