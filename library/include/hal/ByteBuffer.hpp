@@ -80,11 +80,11 @@ public:
     fifo_attr_t m_attributes;
   };
 
-  ByteBuffer() {}
   ByteBuffer(
       const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
+  ByteBuffer() {}
   ByteBuffer(const ByteBuffer &a) = delete;
   ByteBuffer &operator=(const ByteBuffer &a) = delete;
 

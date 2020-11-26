@@ -31,6 +31,16 @@ public:
     m_pinmask = (1 << pin);
   }
 
+  Pin() {}
+  Pin(const Pin &a) = delete;
+  Pin &operator=(const Pin &a) = delete;
+
+  Pin(Pin &&a) { swap(a); }
+  Pin &operator=(Pin &&a) {
+    swap(a);
+    return *this;
+  }
+
   Pin &set_input(Flags flags = Flags::null) {
     pio_attr_t attr;
     attr.o_pinmask = m_pinmask;

@@ -120,6 +120,16 @@ public:
   Spi(const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
+  Spi() {}
+  Spi(const Spi &a) = delete;
+  Spi &operator=(const Spi &a) = delete;
+
+  Spi(Spi &&a) { DeviceAccess<Spi>::swap(a); }
+  Spi &operator=(Spi &&a) {
+    DeviceAccess<Spi>::swap(a);
+    return *this;
+  }
+
   Spi &set_attributes(const Attributes &attributes) {
     return ioctl(I_SPI_SETATTR, &attributes.m_attributes);
   }

@@ -104,10 +104,19 @@ public:
     friend class FrameStream;
     stream_ffifo_attr_t m_attributes;
   };
-  FrameStream();
   FrameStream(
       const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+
+  FrameStream() {}
+  FrameStream(const FrameStream &a) = delete;
+  FrameStream &operator=(const FrameStream &a) = delete;
+
+  FrameStream(FrameStream &&a) { swap(a); }
+  FrameStream &operator=(FrameStream &&a) {
+    swap(a);
+    return *this;
+  }
 
   const FrameStream &start() const {
     return set_attributes(Attributes().set_start());

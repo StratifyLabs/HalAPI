@@ -104,6 +104,16 @@ public:
   Uart(const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
+  Uart() {}
+  Uart(const Uart &a) = delete;
+  Uart &operator=(const Uart &a) = delete;
+
+  Uart(Uart &&a) { swap(a); }
+  Uart &operator=(Uart &&a) {
+    swap(a);
+    return *this;
+  }
+
   int get_version() const {
     return ioctl(I_UART_GETVERSION, nullptr).return_value();
   }

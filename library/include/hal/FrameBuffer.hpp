@@ -49,11 +49,19 @@ public:
     ffifo_attr_t m_attributes;
   };
 
-  FrameBuffer() {}
-
   FrameBuffer(
       const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+
+  FrameBuffer() {}
+  FrameBuffer(const FrameBuffer &a) = delete;
+  FrameBuffer &operator=(const FrameBuffer &a) = delete;
+
+  FrameBuffer(FrameBuffer &&a) { swap(a); }
+  FrameBuffer &operator=(FrameBuffer &&a) {
+    swap(a);
+    return *this;
+  }
 
   const FrameBuffer &set_attributes(Attributes &attr) const {
     return ioctl(I_FFIFO_SETATTR, &attr.m_attributes);

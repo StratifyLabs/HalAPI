@@ -91,6 +91,16 @@ public:
   Gpio(const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
+  Gpio() {}
+  Gpio(const Gpio &a) = delete;
+  Gpio &operator=(const Gpio &a) = delete;
+
+  Gpio(Gpio &&a) { swap(a); }
+  Gpio &operator=(Gpio &&a) {
+    swap(a);
+    return *this;
+  }
+
   Gpio &set_attributes(const Attributes &attributes) {
     return ioctl(I_PIO_SETATTR, (void *)&attributes.m_attributes);
   }
