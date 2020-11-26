@@ -116,8 +116,10 @@ public:
     i2c_info_t m_info;
   };
 
-  I2C(const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  I2C(const var::StringView device,
+      fs::OpenMode open_mode =
+          DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+      : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   I2C() {}
   I2C(const I2C &a) = delete;

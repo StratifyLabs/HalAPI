@@ -101,8 +101,10 @@ public:
     uart_info_t m_info;
   };
 
-  Uart(const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  Uart(const var::StringView device,
+       fs::OpenMode open_mode =
+           DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+      : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   Uart() {}
   Uart(const Uart &a) = delete;
