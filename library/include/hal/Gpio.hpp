@@ -113,7 +113,11 @@ public:
   }
 
   Gpio &set_value(u32 value) { return ioctl(I_PIO_SET, MCU_INT_CAST(value)); }
-  u32 get_value() { return ioctl(I_PIO_GET, nullptr).return_value(); }
+  u32 get_value() {
+    u32 value;
+    ioctl(I_PIO_GET, &value);
+    return value;
+  }
 
 private:
   const Device *m_device;

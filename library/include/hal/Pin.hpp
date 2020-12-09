@@ -66,7 +66,9 @@ public:
   }
 
   bool get_value() const {
-    return ioctl(I_PIO_GET, nullptr).return_value() & m_pinmask != 0;
+    u32 value;
+    ioctl(I_PIO_GET, &value);
+    return (value & m_pinmask) != 0;
   }
 
   bool is_floating(Flags o_restore_flags = Flags::is_float) {
