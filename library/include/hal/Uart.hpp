@@ -14,21 +14,15 @@ namespace hal {
 class UartFlags {
 public:
   enum class Flags {
-    set_line_coding_default /*! See \ref UART_FLAG_SET_LINE_CODING_DEFAULT
-                             */
-    = UART_FLAG_SET_LINE_CODING_DEFAULT,
-    set_line_coding /*! See \ref UART_FLAG_SET_LINE_CODING */
-    = UART_FLAG_SET_LINE_CODING,
-    is_stop1 /*! See \ref UART_FLAG_IS_STOP1 */ = UART_FLAG_IS_STOP1,
-    is_stop2 /*! See \ref UART_FLAG_IS_STOP2 */ = UART_FLAG_IS_STOP2,
-    is_stop0_5 /*! See \ref UART_FLAG_IS_STOP0_5 */ = UART_FLAG_IS_STOP0_5,
-    is_stop1_5 /*! See \ref UART_FLAG_IS_STOP1_5 */ = UART_FLAG_IS_STOP1_5,
-    is_parity_none /*! See \ref UART_FLAG_IS_PARITY_NONE */
-    = UART_FLAG_IS_PARITY_NONE,
-    is_parity_odd /*! See \ref UART_FLAG_IS_PARITY_ODD */
-    = UART_FLAG_IS_PARITY_ODD,
-    is_parity_even /*! See \ref UART_FLAG_IS_PARITY_EVEN */
-    = UART_FLAG_IS_PARITY_EVEN,
+    set_line_coding_default = UART_FLAG_SET_LINE_CODING_DEFAULT,
+    set_line_coding = UART_FLAG_SET_LINE_CODING,
+    is_stop1 = UART_FLAG_IS_STOP1,
+    is_stop2 = UART_FLAG_IS_STOP2,
+    is_stop0_5 = UART_FLAG_IS_STOP0_5,
+    is_stop1_5 = UART_FLAG_IS_STOP1_5,
+    is_parity_none = UART_FLAG_IS_PARITY_NONE,
+    is_parity_odd = UART_FLAG_IS_PARITY_ODD,
+    is_parity_even = UART_FLAG_IS_PARITY_EVEN,
   };
 };
 
@@ -42,6 +36,7 @@ public:
       set_flags(Flags::set_line_coding_default);
       set_frequency(115200);
       set_width(8);
+      var::View(m_attributes.pin_assignment).fill<u8>(0xff);
     }
 
     bool is_valid() const { return frequency() != 0; }

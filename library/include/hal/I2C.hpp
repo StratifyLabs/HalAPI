@@ -53,6 +53,7 @@ public:
   public:
     Attributes() {
       set_frequency(100000);
+      var::View(m_attributes.pin_assignment).fill<u8>(0xff);
     }
 
     API_ACCESS_MEMBER_FUNDAMENTAL(

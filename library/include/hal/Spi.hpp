@@ -77,6 +77,7 @@ public:
         | Flags::is_half_duplex);
       set_frequency(1000000);
       set_width(8);
+      var::View(m_attributes.pin_assignment).fill<u8>(0xff);
     }
 
     Attributes &set_flags(Flags flags) {
