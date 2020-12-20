@@ -19,10 +19,10 @@ int main(int argc, char *argv[]) {
   printer.set_verbose_level(cli.get_option("verbose"));
 
   test::Test::initialize(test::Test::Initialize()
-                           .set_name(cli.get_name())
-                           .set_version(VERSION)
-                           .set_git_hash(SOS_GIT_HASH)
-                           .set_printer(&printer));
+                             .set_name(cli.get_name())
+                             .set_version(VERSION)
+                             .set_git_hash(SOS_GIT_HASH)
+                             .set_printer(&printer));
 
   { UnitTest(cli.get_name()).execute(cli); }
 

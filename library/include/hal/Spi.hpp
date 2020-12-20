@@ -1,5 +1,4 @@
-/*! \file */ // Copyright 2011-2020 Tyler Gilbert and Stratify Labs, Inc; see
-             // LICENSE.md for rights.
+// Copyright 2020-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
 #ifndef HALAPI_HAL_SPI_HPP_
 #define HALAPI_HAL_SPI_HPP_
@@ -14,47 +13,24 @@ namespace hal {
 struct SpiFlags {
   enum class Flags {
     null = 0,
-    is_format_spi /*! See \ref SPI_FLAG_IS_FORMAT_SPI */
-    = SPI_FLAG_IS_FORMAT_SPI,
-    is_format_ti /*! See \ref SPI_FLAG_IS_FORMAT_TI */
-    = SPI_FLAG_IS_FORMAT_TI,
-    is_format_microwire /*! See \ref SPI_FLAG_IS_FORMAT_MICROWIRE */
-    = SPI_FLAG_IS_FORMAT_MICROWIRE,
-    is_mode0 /*! See \ref SPI_FLAG_IS_MODE0 */ = SPI_FLAG_IS_MODE0,
-    is_mode1 /*! See \ref SPI_FLAG_IS_MODE1 */ = SPI_FLAG_IS_MODE1,
-    is_mode2 /*! See \ref SPI_FLAG_IS_MODE2 */ = SPI_FLAG_IS_MODE2,
-    is_mode3 /*! See \ref SPI_FLAG_IS_MODE3 */ = SPI_FLAG_IS_MODE3,
-    set_master /*! See \ref SPI_FLAG_SET_MASTER */ = SPI_FLAG_SET_MASTER,
-    set_slave /*! See \ref SPI_FLAG_SET_SLAVE */ = SPI_FLAG_SET_SLAVE,
-    is_full_duplex /*! See \ref SPI_FLAG_IS_FULL_DUPLEX */
-    = SPI_FLAG_IS_FULL_DUPLEX,
-    set_full_duplex /*! See \ref SPI_FLAG_IS_FULL_DUPLEX */
-    = SPI_FLAG_SET_FULL_DUPLEX,
-    is_half_duplex /*! See \ref SPI_FLAG_IS_HALF_DUPLEX */
-    = SPI_FLAG_IS_HALF_DUPLEX,
-    set_half_duplex /*! See \ref SPI_FLAG_IS_FULL_DUPLEX */
-    = SPI_FLAG_SET_HALF_DUPLEX,
+    is_format_spi = SPI_FLAG_IS_FORMAT_SPI,
+    is_format_ti = SPI_FLAG_IS_FORMAT_TI,
+    is_format_microwire = SPI_FLAG_IS_FORMAT_MICROWIRE,
+    is_mode0 = SPI_FLAG_IS_MODE0,
+    is_mode1 = SPI_FLAG_IS_MODE1,
+    is_mode2 = SPI_FLAG_IS_MODE2,
+    is_mode3 = SPI_FLAG_IS_MODE3,
+    set_master = SPI_FLAG_SET_MASTER,
+    set_slave = SPI_FLAG_SET_SLAVE,
+    set_full_duplex = SPI_FLAG_SET_FULL_DUPLEX,
+    set_half_duplex = SPI_FLAG_SET_HALF_DUPLEX,
+    assert_cs = SPI_FLAG_ASSERT_CS,
+    deassert_cs = SPI_FLAG_DEASSERT_CS,
   };
 };
 
 API_OR_NAMED_FLAGS_OPERATOR(SpiFlags, Flags)
 
-/*! \brief SPI Class
- * \details This class gives access to a SPI port.
- *
- * \code
- * #include <hal.hpp>
- *
- * int main(int argc, char * argv[]){
- *   char buffer[16];
- *   Spi spi(0);           //access to SPI port 0
- *   spi.init();           //init SPI with default settings from BSP
- *   spi.read(buffer, 16); //read 16 bytes from the SPI
- *   spi.close();          //close the SPI (power it off)
- *   return 0;
- * }
- * \endcode
- */
 class Spi : public DeviceAccess<Spi>, public SpiFlags {
 public:
   class Info {
@@ -72,9 +48,8 @@ public:
   class Attributes {
   public:
     Attributes() {
-      set_flags(
-        Flags::set_master | Flags::is_format_spi | Flags::is_mode0
-        | Flags::is_half_duplex);
+      set_flags(Flags::set_master | Flags::is_format_spi | Flags::is_mode0 |
+                Flags::set_half_duplex);
       set_frequency(1000000);
       set_width(8);
       var::View(m_attributes.pin_assignment).fill<u8>(0xff);
