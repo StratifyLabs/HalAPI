@@ -30,6 +30,7 @@ public:
                    DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : m_file(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
+  bool is_valid() const { return m_file.is_valid(); }
 #if 0
   DeviceObject(const DeviceObject &a) = delete;
   DeviceObject &operator=(const DeviceObject &a) = delete;
