@@ -116,6 +116,22 @@ public:
     return ioctl(I_SPI_SETATTR, &attributes.m_attributes);
   }
 
+  Spi &assert_cs() {
+    return set_attributes(Attributes().set_flags(Flags::assert_cs));
+  }
+
+  const Spi &assert_cs() const {
+    return set_attributes(Attributes().set_flags(Flags::assert_cs));
+  }
+
+  Spi &deassert_cs() {
+    return set_attributes(Attributes().set_flags(Flags::deassert_cs));
+  }
+
+  const Spi &deassert_cs() const {
+    return set_attributes(Attributes().set_flags(Flags::deassert_cs));
+  }
+
   Info get_info() {
     spi_info_t info;
     ioctl(I_SPI_GETINFO, &info);
