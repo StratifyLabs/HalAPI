@@ -12,6 +12,7 @@ namespace hal {
 class I2CFlags {
 public:
   enum class Flags {
+    null = 0,
     set_master = I2C_FLAG_SET_MASTER,
     set_slave = I2C_FLAG_SET_SLAVE,
     is_slave_ack_general_call = I2C_FLAG_IS_SLAVE_ACK_GENERAL_CALL,
@@ -129,6 +130,10 @@ public:
   I2C &operator=(I2C &&a) {
     swap(a);
     return *this;
+  }
+
+  I2C &set_attributes(const Attributes &attributes) {
+    return ioctl(I_I2C_SETATTR, (void *)&attributes.m_attributes);
   }
 
   I2C &prepare(u8 slave_addr, Flags o_flags = Flags::prepare_ptr_data) {
