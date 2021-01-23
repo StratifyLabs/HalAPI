@@ -49,6 +49,9 @@ public:
     API_AC(Transfer, var::View, destination);
   };
 
+  const fs::File &file() const { return m_file; }
+  fs::File &file() { return m_file; }
+
 protected:
   void set_interrupt_priority(int priority,
                               int request = I_MCU_SETACTION) const;
