@@ -16,6 +16,8 @@ endif()
 project(HalAPI CXX)
 include(CTest)
 
-add_subdirectory(tests tests)
 add_subdirectory(library library)
+if(SOS_IS_TEST)
+	add_subdirectory(tests tests)
+endif()
 
