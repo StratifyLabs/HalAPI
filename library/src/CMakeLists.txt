@@ -1,6 +1,6 @@
 
 set(SOURCES
-	#	Adc.cpp
+	Adc.cpp
 	#	Core.cpp
 	#	Dac.cpp
 	ByteBuffer.cpp
@@ -10,6 +10,7 @@ set(SOURCES
 	#	Drive.cpp
 	I2C.cpp
 	Gpio.cpp
+	Timer.cpp
 	#	Pwm.cpp
 	#	Rtc.cpp
 	Spi.cpp

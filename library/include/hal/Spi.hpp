@@ -60,6 +60,9 @@ public:
       return *this;
     }
 
+    Flags flags() const { return Flags(m_attributes.o_flags); }
+    u32 o_flags() const { return m_attributes.o_flags; }
+
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u8, attributes, width)
     API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
       Attributes,

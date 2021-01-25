@@ -1,6 +1,6 @@
 
 set(SOURCES
-	#  hal/Adc.hpp
+	hal/Adc.hpp
 	#  hal/Core.hpp
 	#  hal/Dac.hpp
 	hal/Device.hpp
@@ -15,6 +15,7 @@ set(SOURCES
 	#  hal/Pwm.hpp
 	#  hal/Rtc.hpp
 	hal/Spi.hpp
+	hal/Timer.hpp
 	hal/Uart.hpp
 	#  hal/Usb.hpp
 	hal.hpp

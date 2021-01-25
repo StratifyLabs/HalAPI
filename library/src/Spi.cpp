@@ -5,10 +5,9 @@
 
 #include "hal/Spi.hpp"
 
-using namespace hal;
-
 printer::Printer &
 printer::operator<<(printer::Printer &printer, const hal::Spi::Attributes &a) {
+  printer.key("flags", var::NumberString(static_cast<u32>(a.o_flags())));
   printer.key("frequency", var::NumberString(a.frequency()));
   printer.key("width", var::NumberString(a.width()));
   printer.key("miso",
