@@ -124,6 +124,40 @@ public:
     return ioctl(I_TMR_SETATTR, &attributes.m_attributes);
   }
 
+  Timer &set_value(u32 value) { return ioctl(I_TMR_SET, (void *)value); }
+
+  const Timer &set_value(const Attributes &attributes) const {
+    return ioctl(I_TMR_SETATTR, &attributes.m_attributes);
+  }
+
+  u32 get_value() const {
+    u32 value = 0;
+    ioctl(I_TMR_SETATTR, &value);
+    return value;
+  }
+
+  Timer &enable() { return ioctl(I_TMR_ENABLE, nullptr); }
+
+  const Timer &enable() const { return ioctl(I_TMR_ENABLE, nullptr); }
+
+  Timer &disable() { return ioctl(I_TMR_DISABLE, nullptr); }
+
+  const Timer &disable() const { return ioctl(I_TMR_DISABLE, nullptr); }
+
+  Timer &set_channel(const mcu_channel_t &channel) {
+    return ioctl(I_TMR_SETCHANNEL, (void *)&channel);
+  }
+
+  const Timer &set_channel(const mcu_channel_t &channel) const {
+    return ioctl(I_TMR_SETCHANNEL, (void *)&channel);
+  }
+
+  u32 get_channel(u32 offset) {
+    mcu_channel_t channel = {offset, 0};
+    ioctl(I_TMR_GETCHANNEL, &channel);
+    return channel.value;
+  }
+
   Info get_info() {
     tmr_info_t info;
     ioctl(I_TMR_GETINFO, &info);
