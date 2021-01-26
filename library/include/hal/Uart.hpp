@@ -114,13 +114,22 @@ public:
     return ioctl(I_UART_GETVERSION, nullptr).return_value();
   }
 
+  Uart &set_attributes() { return ioctl(I_UART_SETATTR, nullptr); }
+  const Uart &set_attributes() const { return ioctl(I_UART_SETATTR, nullptr); }
+
   Uart &set_attributes(const Attributes &attr) {
     return ioctl(I_UART_SETATTR, (void *)&attr.m_attributes);
   }
 
+  const Uart &set_attributes(const Attributes &attr) const {
+    return ioctl(I_UART_SETATTR, (void *)&attr.m_attributes);
+  }
+
   Uart &put(char c) { return ioctl(I_UART_PUT, &c); }
+  const Uart &put(char c) const { return ioctl(I_UART_PUT, &c); }
 
   Uart &flush() { return ioctl(I_UART_FLUSH, nullptr); }
+  const Uart &flush() const { return ioctl(I_UART_FLUSH, nullptr); }
 
   char get() const {
     char c;

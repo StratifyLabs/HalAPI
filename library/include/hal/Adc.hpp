@@ -14,20 +14,19 @@ struct AdcFlags {
   enum class Flags {
     null = 0,
     adc_loc_is_group = ADC_LOC_IS_GROUP,
-    adc_flag_set_converter = ADC_FLAG_SET_CONVERTER,
-    adc_flag_is_left_justified = ADC_FLAG_IS_LEFT_JUSTIFIED,
-    adc_flag_is_right_justified = ADC_FLAG_IS_RIGHT_JUSTIFIED,
-    adc_flag_set_master = ADC_FLAG_SET_MASTER,
-    adc_flag_set_slave = ADC_FLAG_SET_SLAVE,
-    adc_flag_is_trigger_tmr = ADC_FLAG_IS_TRIGGER_TMR,
-    adc_flag_is_trigger_eint = ADC_FLAG_IS_TRIGGER_EINT,
-    adc_flag_set_channels = ADC_FLAG_SET_CHANNELS,
-    adc_flag_is_scan_mode = ADC_FLAG_IS_SCAN_MODE,
-    adc_flag_is_trigger_eint_edge_rising = ADC_FLAG_IS_TRIGGER_EINT_EDGE_RISING,
-    adc_flag_is_trigger_eint_edge_falling =
-        ADC_FLAG_IS_TRIGGER_EINT_EDGE_FALLING,
-    adc_flag_is_group = ADC_FLAG_IS_GROUP,
-    adc_flag_is_continous_conversion = ADC_FLAG_IS_CONTINOUS_CONVERSION
+    set_converter = ADC_FLAG_SET_CONVERTER,
+    is_left_justified = ADC_FLAG_IS_LEFT_JUSTIFIED,
+    is_right_justified = ADC_FLAG_IS_RIGHT_JUSTIFIED,
+    set_master = ADC_FLAG_SET_MASTER,
+    set_slave = ADC_FLAG_SET_SLAVE,
+    is_trigger_tmr = ADC_FLAG_IS_TRIGGER_TMR,
+    is_trigger_eint = ADC_FLAG_IS_TRIGGER_EINT,
+    set_channels = ADC_FLAG_SET_CHANNELS,
+    is_scan_mode = ADC_FLAG_IS_SCAN_MODE,
+    is_trigger_eint_edge_rising = ADC_FLAG_IS_TRIGGER_EINT_EDGE_RISING,
+    is_trigger_eint_edge_falling = ADC_FLAG_IS_TRIGGER_EINT_EDGE_FALLING,
+    is_group = ADC_FLAG_IS_GROUP,
+    is_continous_conversion = ADC_FLAG_IS_CONTINOUS_CONVERSION
   };
 };
 
@@ -60,6 +59,24 @@ public:
 
     Flags flags() const { return Flags(m_attributes.o_flags); }
     u32 o_flags() const { return m_attributes.o_flags; }
+
+    class SetGroupChannel {
+      API_AF(SetGroupChannel, u16, channel, 0);
+      API_AF(SetGroupChannel, u32, rank, 0);
+      API_AF(SetGroupChannel, u32, sampling_time, 15);
+      API_AF(SetGroupChannel, mcu_pin_t, pin, {0xff});
+    };
+
+    Attributes &set_group_channel(const SetGroupChannel &options) {
+      set_flags(Flags::set_channels | Flags::is_group);
+      set_channel(options.channel());
+      set_rank(options.rank());
+      set_sampling_time(options.sampling_time());
+      if (options.pin().port != 0xff) {
+        set_channel0(options.pin());
+      }
+      return *this;
+    }
 
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u8, attributes, width)
     API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, u32, attributes,
@@ -102,6 +119,9 @@ public:
     DeviceAccess<Adc>::swap(a);
     return *this;
   }
+
+  Adc &set_attributes() { return ioctl(I_ADC_SETATTR, nullptr); }
+  const Adc &set_attributes() const { return ioctl(I_ADC_SETATTR, nullptr); }
 
   Adc &set_attributes(const Attributes &attributes) {
     return ioctl(I_ADC_SETATTR, &attributes.m_attributes);

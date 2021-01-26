@@ -111,6 +111,9 @@ public:
     return *this;
   }
 
+  Spi &set_attributes() { return ioctl(I_SPI_SETATTR, nullptr); }
+  const Spi &set_attributes() const { return ioctl(I_SPI_SETATTR, nullptr); }
+
   Spi &set_attributes(const Attributes &attributes) {
     return ioctl(I_SPI_SETATTR, &attributes.m_attributes);
   }
