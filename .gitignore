@@ -1,4 +1,4 @@
 
-cmake_link/
-cmake_arm/
+cmake*_link/
+cmake*_arm/
 CMakeLists.txt.user
