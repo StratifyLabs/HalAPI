@@ -127,7 +127,7 @@ public:
     return ioctl(I_TMR_SETATTR, &attributes.m_attributes);
   }
 
-  Timer &set_value(u32 value) { return ioctl(I_TMR_SET, (void *)value); }
+	Timer &set_value(u32 value) { return ioctl(I_TMR_SET, MCU_INT_CAST(value)); }
   const Timer &set_value(const Attributes &attributes) const {
     return ioctl(I_TMR_SET, &attributes.m_attributes);
   }
