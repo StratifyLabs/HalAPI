@@ -6,7 +6,7 @@
 namespace hal {}
 
 #include "hal/ByteBuffer.hpp"
-#include "hal/Device.hpp"
+#include "hal/Drive.hpp"
 #include "hal/FrameBuffer.hpp"
 #include "hal/FrameStream.hpp"
 #include "hal/Gpio.hpp"

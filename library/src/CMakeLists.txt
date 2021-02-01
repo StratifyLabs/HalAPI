@@ -7,7 +7,7 @@ set(SOURCES
 	FrameBuffer.cpp
 	FrameStream.cpp
 	Device.cpp
-	#	Drive.cpp
+	Drive.cpp
 	I2C.cpp
 	Gpio.cpp
 	Timer.cpp

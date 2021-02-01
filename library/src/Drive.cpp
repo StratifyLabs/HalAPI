@@ -3,114 +3,47 @@
 #include "hal/Drive.hpp"
 #include "printer/Printer.hpp"
 
-printer::Printer &
-printer::operator<<(printer::Printer &printer, const hal::DriveInfo &a) {
-  printer.key("addressableSize", var::String::number(a.addressable_size()));
-  printer.key("eraseBlockSize", var::String::number(a.erase_block_size()));
-  printer.key(
-    "eraseBlockTime",
-    var::String::number(a.erase_block_time(), "%ldus"));
-  printer.key(
-    "eraseDeviceTime",
-    var::String::number(a.erase_device_time().milliseconds(), "%ldms"));
-  printer.key("frequency", var::String::number(a.frequency()));
-  printer.key("events", var::String::number(a.o_events(), "0x%lX"));
-  printer.key("flags", var::String::number(a.o_flags(), "0x%lX"));
-  printer.key("pageProgramSize", var::String::number(a.page_program_size()));
-  printer.key("writeBlockCount", var::String::number(a.write_block_count()));
-  printer.key("writeBlockSize", var::String::number(a.write_block_size()));
-  return printer;
+printer::Printer &printer::operator<<(printer::Printer &printer,
+                                      const hal::Drive::Info &a) {
+  return printer.key("addressableSize", var::NumberString(a.addressable_size()))
+      .key("eraseBlockSize", var::NumberString(a.erase_block_size()))
+      .key("eraseBlockTime", var::NumberString(a.erase_block_time(), "%ldus"))
+      .key("eraseDeviceTime",
+           var::NumberString(a.erase_device_time().milliseconds(), "%ldms"))
+      .key("frequency", var::NumberString(a.frequency()))
+      .key("events", var::NumberString(a.o_events(), "0x%lX"))
+      .key("flags", var::NumberString(a.o_flags(), "0x%lX"))
+      .key("pageProgramSize", var::NumberString(a.page_program_size()))
+      .key("writeBlockSize", var::NumberString(a.write_block_size()));
+}
+
+printer::Printer &printer::operator<<(printer::Printer &printer,
+                                      const hal::Drive::Attributes &a) {
+  return printer.key("oFlags", var::NumberString(a.o_flags(), "0x%lX"))
+      .key("start", var::NumberString(a.start()))
+      .key("end", var::NumberString(a.end()));
 }
 
 using namespace hal;
 
-Drive::Drive() {}
-
-int Drive::initialize(const var::String &path) {
-
-  if (fileno() < 0) {
-    if (open(path, fs::OpenMode::read_write()) < 0) {
-      return return_value();
-    }
-  }
-
-  drive_attr_t attr;
-  attr.o_flags = DRIVE_FLAG_INIT;
-  return set_attributes(attr);
-}
-
-int Drive::powerup() const {
-  drive_attr_t attr;
-  attr.o_flags = DRIVE_FLAG_POWERUP;
-  return set_attributes(attr);
-}
-
-int Drive::powerdown() const {
-  drive_attr_t attr;
-  attr.o_flags = DRIVE_FLAG_POWERDOWN;
-  return set_attributes(attr);
-}
-
-int Drive::reset() const {
-  drive_attr_t attr;
-  attr.o_flags = DRIVE_FLAG_RESET;
-  return set_attributes(attr);
-}
-
-int Drive::protect() const {
-  drive_attr_t attr;
-  attr.o_flags = DRIVE_FLAG_PROTECT;
-  return set_attributes(attr);
-}
-
-int Drive::unprotect() const {
-  drive_attr_t attr;
-  attr.o_flags = DRIVE_FLAG_UNPROTECT;
-  return set_attributes(attr);
-}
-
-int Drive::erase_blocks(u32 start, u32 end) const {
-  drive_attr_t attr;
-  attr.o_flags = DRIVE_FLAG_ERASE_BLOCKS;
-  attr.start = start;
-  attr.end = end;
-  return set_attributes(attr);
-}
-
-int Drive::erase_device() const {
-  drive_attr_t attr;
-  DriveInfo info = get_info();
-  if (info.o_flags() & DRIVE_FLAG_ERASE_DEVICE) {
-    attr.o_flags = DRIVE_FLAG_ERASE_DEVICE;
-    return set_attributes(attr);
+const Drive &Drive::erase_device() const {
+  const auto info = get_info();
+  if (info.flags() & Flags::erase_device) {
+    return set_attributes(Attributes().set_flags(Flags::erase_device));
   }
 
   u32 address = 0;
-  while (address < info.write_block_count()) {
-    if (erase_blocks(address, info.write_block_count()) < 0) {
-      return return_value();
-    }
-    address += return_value();
-    while (is_busy()) {
+  while (address < info.size()) {
+
+    address += set_attributes(Attributes()
+                                  .set_flags(Flags::erase_blocks)
+                                  .set_start(address)
+                                  .set_end(info.write_block_size()))
+                   .return_value();
+
+    while (is_busy() && is_success()) {
       chrono::wait(info.erase_block_time());
     }
   }
-  return 0;
-}
-
-bool Drive::is_busy() const {
-  int result = ioctl(IoRequest(I_DRIVE_ISBUSY));
-  return result > 0;
-}
-
-DriveInfo Drive::get_info() const {
-  drive_info_t info;
-  if (ioctl(IoRequest(I_DRIVE_GETINFO), IoArgument(&info)) < 0) {
-    return DriveInfo();
-  }
-  return DriveInfo(info);
-}
-
-int Drive::set_attributes(const drive_attr_t &attributes) const {
-  return ioctl(IoRequest(I_DRIVE_SETATTR), IoConstArgument(&attributes));
+  return *this;
 }

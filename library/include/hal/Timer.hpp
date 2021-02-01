@@ -80,7 +80,7 @@ public:
 
     API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, u32, attributes,
                                              frequency, freq)
-    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u8, attributes, period)
+    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u32, attributes, period)
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, mcu_channel_t, attributes,
                                   channel)
     API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, mcu_pin_t,
