@@ -6,7 +6,6 @@
 #include <sos/dev/spi.h>
 
 #include "Device.hpp"
-#include "PinAssignment.hpp"
 
 namespace hal {
 
@@ -91,6 +90,9 @@ public:
       attributes.pin_assignment,
       cs)
 
+    spi_attr_t *attributes() { return &m_attributes; }
+    const spi_attr_t *attributes() const { return &m_attributes; }
+
   private:
     friend class Spi;
     mutable spi_attr_t m_attributes;
@@ -145,6 +147,9 @@ public:
   }
 
   Spi &swap(u32 value) { return ioctl(I_SPI_SWAP, MCU_INT_CAST(value)); }
+
+
+
 
 private:
 };

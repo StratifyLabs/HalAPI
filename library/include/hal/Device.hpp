@@ -131,7 +131,17 @@ public:
 
   Derived &cancel_write(int channel = 0) {
     DeviceObject::cancel_write(channel);
-    return static_cast<const Derived &>(*this);
+    return static_cast<Derived &>(*this);
+  }
+
+  const Derived &set_interrupt_priority(int priority) const{
+    DeviceObject::set_interrupt_priority(priority);
+    return static_cast<Derived &>(*this);
+  }
+
+  Derived &set_interrupt_priority(int priority){
+    DeviceObject::set_interrupt_priority(priority);
+    return static_cast<Derived &>(*this);
   }
 
   using fs::FileMemberAccess<Derived>::read;
@@ -144,7 +154,7 @@ public:
 
   Derived &read(fs::Aio &aio) {
     DeviceObject::read(aio);
-    return static_cast<const Derived &>(*this);
+    return static_cast<Derived &>(*this);
   }
 
   const Derived &write(fs::Aio &aio) const {
@@ -154,7 +164,7 @@ public:
 
   Derived &write(fs::Aio &aio) {
     DeviceObject::write(aio);
-    return static_cast<const Derived &>(*this);
+    return static_cast<Derived &>(*this);
   }
 
   const Derived &transfer(const Transfer &options) const {
@@ -164,7 +174,7 @@ public:
 
   Derived &transfer(const Transfer &options) {
     DeviceObject::transfer(options);
-    return static_cast<const Derived &>(*this);
+    return static_cast<Derived &>(*this);
   }
 #endif
 };

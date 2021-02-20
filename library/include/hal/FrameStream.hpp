@@ -100,6 +100,8 @@ public:
       return *this;
     }
 
+    stream_ffifo_attr_t *attributes() { return &m_attributes; }
+    const stream_ffifo_attr_t *attributes() const { return &m_attributes; }
   private:
     friend class FrameStream;
     stream_ffifo_attr_t m_attributes;

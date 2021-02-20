@@ -6,7 +6,6 @@
 #include <sos/dev/adc.h>
 
 #include "Device.hpp"
-#include "PinAssignment.hpp"
 
 namespace hal {
 
@@ -48,9 +47,7 @@ public:
 
   class Attributes {
   public:
-    Attributes() {
-      var::View(m_attributes.pin_assignment).fill<u8>(0xff);
-    }
+    Attributes() { var::View(m_attributes.pin_assignment).fill<u8>(0xff); }
 
     Attributes &set_flags(Flags flags) {
       m_attributes.o_flags = static_cast<u32>(flags);
@@ -99,6 +96,9 @@ public:
     API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, mcu_pin_t,
                                              attributes.pin_assignment,
                                              channel3, channel[3])
+
+    adc_attr_t *attributes() { return &m_attributes; }
+    const adc_attr_t *attributes() const { return &m_attributes; }
 
   private:
     friend class Adc;

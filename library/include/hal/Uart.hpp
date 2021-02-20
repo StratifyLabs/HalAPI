@@ -73,6 +73,8 @@ public:
       return *this;
     }
 
+    uart_attr_t *attributes() { return &m_attributes; }
+    const uart_attr_t *attributes() const { return &m_attributes; }
   private:
     friend class Uart;
     uart_attr_t m_attributes;
@@ -83,10 +85,9 @@ public:
     Info() { m_info = {0}; }
     Info(const uart_info_t &info) { m_info = info; }
 
+
     bool is_valid() const { return m_info.o_flags != 0; }
-
     bool is_rx_fifo() const { return m_info.o_flags & UART_FLAG_IS_RX_FIFO; }
-
     u32 size() const { return m_info.size; }
     u32 size_ready() const { return m_info.size_ready; }
 

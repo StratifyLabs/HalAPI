@@ -74,6 +74,9 @@ public:
 
     Flags flags() const { return static_cast<Flags>(m_attributes.o_flags); }
 
+    fifo_attr_t *attributes() { return &m_attributes; }
+    const fifo_attr_t *attributes() const { return &m_attributes; }
+
   private:
     friend class ByteBuffer;
     fifo_attr_t m_attributes;

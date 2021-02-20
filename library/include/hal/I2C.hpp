@@ -98,6 +98,9 @@ public:
       return *this;
     }
 
+    i2c_attr_t *attributes() { return &m_attributes; }
+    const i2c_attr_t *attributes() const { return &m_attributes; }
+
   private:
     friend class I2C;
     i2c_attr_t m_attributes;
@@ -132,19 +135,39 @@ public:
     return *this;
   }
 
-  I2C &set_attributes(const Attributes &attributes) {
+  const I2C &set_attributes() const {
+    return ioctl(I_I2C_SETATTR, nullptr);
+  }
+
+  I2C &set_attributes() {
+    return API_CONST_CAST_SELF(I2C, set_attributes);
+  }
+
+  const I2C &set_attributes(const Attributes &attributes) const {
     return ioctl(I_I2C_SETATTR, (void *)&attributes.m_attributes);
   }
 
-  I2C &prepare(u8 slave_addr, Flags o_flags = Flags::prepare_ptr_data) {
+  I2C &set_attributes(const Attributes &attributes) {
+    return API_CONST_CAST_SELF(I2C, set_attributes, attributes);
+  }
+
+  const I2C &prepare(u8 slave_addr, Flags o_flags = Flags::prepare_ptr_data) const {
     Attributes attributes
       = Attributes().set_flags(o_flags).set_slave_addr(slave_addr);
     return ioctl(I_I2C_SETATTR, &attributes.m_attributes);
   }
 
-  I2C &reset() {
+  I2C &prepare(u8 slave_addr, Flags o_flags = Flags::prepare_ptr_data) {
+    return API_CONST_CAST_SELF(I2C, prepare, slave_addr, o_flags);
+  }
+
+  const I2C &reset() const {
     Attributes attributes = Attributes().set_flags(Flags::reset);
     return ioctl(I_I2C_SETATTR, &attributes.m_attributes);
+  }
+
+  I2C &reset() {
+    return API_CONST_CAST_SELF(I2C, reset);
   }
 
   int get_error() { return get_info().error(); }

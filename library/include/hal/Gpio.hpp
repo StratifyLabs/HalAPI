@@ -64,12 +64,16 @@ class Gpio : public DeviceAccess<Gpio>, public GpioFlags {
 public:
   class Attributes {
   public:
+
+    Attributes() : m_attributes({0}){}
+
     Attributes(Flags o_flags, u32 o_pinmask) {
       set_flags(o_flags);
       set_pinmask(o_pinmask);
     }
 
-    Flags o_flags() const { return static_cast<Flags>(m_attributes.o_flags); }
+    u32 o_flags() const { return m_attributes.o_flags; }
+    Flags flags() const { return Flags(m_attributes.o_flags); }
     u32 o_pinmask() const { return m_attributes.o_pinmask; }
 
     Attributes &set_flags(Flags value) {
@@ -81,6 +85,9 @@ public:
       m_attributes.o_pinmask = value;
       return *this;
     }
+
+    pio_attr_t *attributes() { return &m_attributes; }
+    const pio_attr_t *attributes() const { return &m_attributes; }
 
   private:
     friend class Gpio;

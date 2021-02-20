@@ -44,6 +44,9 @@ public:
       return *this;
     }
 
+    ffifo_attr_t *attributes() { return &m_attributes; }
+    const ffifo_attr_t *attributes() const { return &m_attributes; }
+
   private:
     friend class FrameBuffer;
     ffifo_attr_t m_attributes;

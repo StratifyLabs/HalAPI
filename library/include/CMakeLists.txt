@@ -10,6 +10,7 @@ set(SOURCES
 	hal/FrameStream.hpp
 	hal/Drive.hpp
 	hal/I2C.hpp
+	hal/I2S.hpp
 	hal/Gpio.hpp
 	hal/Pin.hpp
 	#  hal/Pwm.hpp
@@ -17,7 +18,7 @@ set(SOURCES
 	hal/Spi.hpp
 	hal/Timer.hpp
 	hal/Uart.hpp
-	#  hal/Usb.hpp
+	hal/Usb.hpp
 	hal.hpp
 	PARENT_SCOPE
 	)

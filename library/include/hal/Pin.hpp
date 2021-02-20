@@ -30,6 +30,13 @@ public:
     m_pinmask = (1 << pin);
   }
 
+  explicit Pin(const mcu_pin_t pin FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+      : DeviceAccess("/dev/pio" & var::NumberString(pin.port),
+                     fs::OpenMode::read_write()
+                     FSAPI_LINK_INHERIT_DRIVER_LAST) {
+    m_pinmask = (1 << pin.pin);
+  }
+
   Pin() {}
   Pin(const Pin &a) = delete;
   Pin &operator=(const Pin &a) = delete;
@@ -40,21 +47,34 @@ public:
     return *this;
   }
 
-  Pin &set_input(Flags flags = Flags::null) {
+  const Pin &set_input(Flags flags = Flags::null) const {
     pio_attr_t attr;
     attr.o_pinmask = m_pinmask;
     attr.o_flags = static_cast<u32>(flags | Flags::set_input);
     return ioctl(I_PIO_SETATTR, &attr);
   }
 
-  Pin &set_output(Flags flags = Flags::null) {
+  Pin &set_input(Flags flags = Flags::null){
+    return API_CONST_CAST_SELF(Pin, set_input, flags);
+  }
+
+  const Pin &set_output(Flags flags = Flags::null) const {
     pio_attr_t attr;
     attr.o_pinmask = m_pinmask;
     attr.o_flags = static_cast<u32>(flags | Flags::set_output);
     return ioctl(I_PIO_SETATTR, &attr);
   }
 
+  Pin &set_output(Flags flags = Flags::null){
+    return API_CONST_CAST_SELF(Pin, set_output, flags);
+  }
+
   const Pin &wait(const chrono::MicroTime &a) const {
+    chrono::wait(a);
+    return *this;
+  }
+
+  Pin &wait(const chrono::MicroTime &a){
     chrono::wait(a);
     return *this;
   }
@@ -64,13 +84,18 @@ public:
                  MCU_INT_CAST(m_pinmask));
   }
 
+  Pin &set_value(bool value = true) {
+    return API_CONST_CAST_SELF(Pin, set_value, value);
+  }
+
+
   bool get_value() const {
     u32 value;
     ioctl(I_PIO_GET, &value);
     return (value & m_pinmask) != 0;
   }
 
-  bool is_floating(Flags o_restore_flags = Flags::is_float) {
+  bool is_floating(Flags o_restore_flags = Flags::is_float) const {
     bool result = true;
     set_input(Flags::is_pullup);
     if (get_value() == false) {

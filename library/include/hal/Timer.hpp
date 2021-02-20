@@ -6,7 +6,6 @@
 #include <sos/dev/tmr.h>
 
 #include "Device.hpp"
-#include "PinAssignment.hpp"
 
 namespace hal {
 
@@ -96,6 +95,8 @@ public:
                                              attributes.pin_assignment,
                                              channel3, channel[3])
 
+    tmr_attr_t *attributes() { return &m_attributes; }
+    const tmr_attr_t *attributes() const { return &m_attributes; }
   private:
     friend class Timer;
     mutable tmr_attr_t m_attributes;
