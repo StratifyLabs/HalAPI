@@ -27,3 +27,18 @@ printer::operator<<(printer::Printer &printer, const hal::I2C::Info &a) {
   printer.key("error", var::NumberString(a.error()));
   return printer;
 }
+
+
+I2C::ScanResult I2C::scan() const {
+  ScanResult result;
+  result.fill(0);
+  for(u8 addr = 1; addr < 128; addr++){
+    char c = 0;
+    api::ErrorGuard eg;
+    prepare(addr, Flags::prepare_data).read(&c, 1);
+    if( return_value() == 1 ){
+      result.at(addr) = addr;
+    }
+  }
+  return result;
+}

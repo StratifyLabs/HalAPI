@@ -143,6 +143,10 @@ public:
     return API_CONST_CAST_SELF(I2C, set_attributes);
   }
 
+  using ScanResult = var::Array<u8, 128>;
+
+  ScanResult scan() const;
+
   const I2C &set_attributes(const Attributes &attributes) const {
     return ioctl(I_I2C_SETATTR, (void *)&attributes.m_attributes);
   }
