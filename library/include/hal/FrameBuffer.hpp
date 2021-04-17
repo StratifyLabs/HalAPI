@@ -13,8 +13,8 @@ class FrameBuffer : public DeviceAccess<FrameBuffer> {
 public:
   class Info {
   public:
-    Info() { m_info = {0}; }
-    Info(const ffifo_info_t &info) { m_info = info; }
+    Info() : m_info{} {}
+    Info(const ffifo_info_t &info) { m_info = info;}
     bool is_valid() const { return m_info.frame_size != 0; }
     u16 frame_count() const { return m_info.frame_count; }
     u16 frame_size() const { return m_info.frame_size; }
@@ -31,7 +31,7 @@ public:
 
   class Attributes {
   public:
-    Attributes() { m_attributes = {0}; }
+    Attributes() : m_attributes{} {}
 
     Attributes(const ffifo_attr_t &attr) { m_attributes = attr; }
 
@@ -39,7 +39,7 @@ public:
       m_attributes.o_flags |= FFIFO_FLAG_IS_OVERFLOW;
       return *this;
     }
-    Attributes &set_write_block() {
+    Attributes &set_writeblock() {
       m_attributes.o_flags |= FFIFO_FLAG_SET_WRITEBLOCK;
       return *this;
     }

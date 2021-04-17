@@ -97,8 +97,12 @@ public:
     return *this;
   }
 
-  ByteBuffer &set_attributes(Attributes &attr) {
+  const ByteBuffer &set_attributes(Attributes &attr) const {
     return ioctl(I_FIFO_SETATTR, &attr.m_attributes);
+  }
+
+  ByteBuffer &set_attributes(Attributes &attr){
+    return API_CONST_CAST_SELF(ByteBuffer, set_attributes, attr);
   }
 
   Info get_info() const {
