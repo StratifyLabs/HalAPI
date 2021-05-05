@@ -5,6 +5,7 @@
 
 namespace hal {}
 
+#include "hal/Adc.hpp"
 #include "hal/ByteBuffer.hpp"
 #include "hal/Drive.hpp"
 #include "hal/FrameBuffer.hpp"
@@ -13,6 +14,7 @@ namespace hal {}
 #include "hal/I2C.hpp"
 #include "hal/Pin.hpp"
 #include "hal/Spi.hpp"
+#include "hal/Timer.hpp"
 #include "hal/Uart.hpp"
 
 using namespace hal;
