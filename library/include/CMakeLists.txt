@@ -13,7 +13,7 @@ set(SOURCES
 	hal/I2S.hpp
 	hal/Gpio.hpp
 	hal/Pin.hpp
-	#  hal/Pwm.hpp
+	hal/Pwm.hpp
 	#  hal/Rtc.hpp
 	hal/Spi.hpp
 	hal/Timer.hpp

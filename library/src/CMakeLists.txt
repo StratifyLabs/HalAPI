@@ -12,7 +12,7 @@ set(SOURCES
 	I2S.cpp
 	Gpio.cpp
 	Timer.cpp
-	#	Pwm.cpp
+	Pwm.cpp
 	#	Rtc.cpp
 	Spi.cpp
 	Uart.cpp
