@@ -35,11 +35,18 @@ class Adc : public DeviceAccess<Adc>, public AdcFlags {
 public:
   class Info {
   public:
-    Info() { m_info = {0}; }
-    Info(const adc_info_t &info) { m_info = info; }
+    Info() : m_info{} {}
+    Info(const adc_info_t &info) : m_info(info) {}
     bool is_valid() const { return m_info.o_flags != 0; }
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_flags)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_events)
+    API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, maximum)
+    API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, reference_mv)
+    API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, internal_vref_channel)
+    API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, internal_temperature_channel)
+    API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, internal_vbat_channel)
+    API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, bytes_per_sample)
+    API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, resolution)
   private:
     friend class Adc;
     adc_info_t m_info;

@@ -137,7 +137,13 @@ public:
     return *this;
   }
 
-
+  const Pwm &set_attributes(const Attributes &attr) const {
+    ioctl(I_PWM_SETATTR, (void*)&attr);
+    return *this;
+  }
+  Pwm &set_attributes(const Attributes &attr){
+    return API_CONST_CAST_SELF(Pwm,set_attributes,attr);
+  }
 
   const Pwm &set_channel(const mcu_channel_t &channel) const {
     ioctl(I_PWM_SETCHANNEL, (void*)&channel);
