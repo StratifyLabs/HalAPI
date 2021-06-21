@@ -177,7 +177,7 @@ public:
   int get_error() { return get_info().error(); }
 
   Info get_info() {
-    i2c_info_t info;
+    i2c_info_t info{};
     ioctl(I_I2C_GETINFO, &info);
     return Info(info);
   }

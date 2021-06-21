@@ -47,6 +47,7 @@ public:
       set_frequency(1000000);
       m_attributes.channel = mcu_channel(-1, -1);
       m_attributes.period = 1000;
+      var::View(m_attributes.pin_assignment).fill<u8>(0xff);
     }
 
     API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
@@ -175,6 +176,20 @@ public:
 
   Pwm &disable(){
     return API_CONST_CAST_SELF(Pwm,disable);
+  }
+
+  u32 get_value() const {
+    u32 result = 0;
+    ioctl(I_PWM_GET, &result);
+    return result;
+  }
+
+  Pwm& set_value(u32 value){
+    return ioctl(I_PWM_SET, &value);
+  }
+
+  const Pwm& set_value(u32 value) const {
+    return ioctl(I_PWM_SET, &value);
   }
 
 
