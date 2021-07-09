@@ -120,6 +120,30 @@ public:
   const Drive &erase_device() const;
   Drive &erase_device() { return API_CONST_CAST_SELF(Drive, erase_device); }
 
+  const Drive &erase_blocks(u32 start_address, u32 end_address) const;
+  Drive &erase_blocks(u32 start_address, u32 end_address){
+    return API_CONST_CAST_SELF(Drive, erase_blocks, start_address, end_address);
+  }
+
+  const Drive &unprotect() const {
+    return set_attributes(Attributes().set_flags(Flags::unprotect));
+  }
+  Drive &unprotect() { return API_CONST_CAST_SELF(Drive, unprotect); }
+
+
+  const Drive &reset() const {
+    return set_attributes(Attributes().set_flags(Flags::reset));
+  }
+  Drive &reset() { return API_CONST_CAST_SELF(Drive, reset); }
+
+
+  const Drive &protect() const {
+    return set_attributes(Attributes().set_flags(Flags::protect));
+  }
+  Drive &protect() { return API_CONST_CAST_SELF(Drive, protect); }
+
+
+
   bool is_busy() const {
     return ioctl(I_DRIVE_ISBUSY, nullptr).return_value() > 0;
   }

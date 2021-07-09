@@ -47,3 +47,10 @@ const Drive &Drive::erase_device() const {
   }
   return *this;
 }
+
+const Drive &Drive::erase_blocks(u32 start_address, u32 end_address) const {
+  return set_attributes(Attributes()
+                            .set_flags(Flags::erase_blocks)
+                            .set_start(start_address)
+                            .set_end(end_address));
+}
