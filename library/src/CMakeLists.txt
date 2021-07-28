@@ -8,6 +8,7 @@ set(SOURCES
 	FrameStream.cpp
 	Device.cpp
 	Drive.cpp
+	Flash.cpp
 	I2C.cpp
 	I2S.cpp
 	Gpio.cpp

@@ -1,5 +1,5 @@
-/*! \file */ // Copyright 2011-2020 Tyler Gilbert and Stratify Labs, Inc; see
-             // LICENSE.md for rights.
+// Copyright 2011-2020 Tyler Gilbert and Stratify Labs, Inc; see
+// LICENSE.md for rights.
 #ifndef HALAPI_HAL_DRIVE_HPP_
 #define HALAPI_HAL_DRIVE_HPP_
 
@@ -30,7 +30,7 @@ class Drive : public DeviceAccess<Drive>, public DriveFlags {
 public:
   class Info {
   public:
-    Info() { m_info = {0}; }
+    Info() { m_info = {}; }
     explicit Info(const drive_info_t &info) : m_info(info) {}
 
     bool is_valid() const { return m_info.num_write_blocks != 0; }
@@ -89,10 +89,11 @@ public:
     mutable drive_attr_t m_attributes;
   };
 
-  Drive(const var::StringView device,
-        fs::OpenMode open_mode =
-            DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  Drive(
+    const var::StringView device,
+    fs::OpenMode open_mode
+    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   Drive() {}
   Drive(const Drive &a) = delete;
@@ -121,7 +122,7 @@ public:
   Drive &erase_device() { return API_CONST_CAST_SELF(Drive, erase_device); }
 
   const Drive &erase_blocks(u32 start_address, u32 end_address) const;
-  Drive &erase_blocks(u32 start_address, u32 end_address){
+  Drive &erase_blocks(u32 start_address, u32 end_address) {
     return API_CONST_CAST_SELF(Drive, erase_blocks, start_address, end_address);
   }
 
@@ -130,19 +131,15 @@ public:
   }
   Drive &unprotect() { return API_CONST_CAST_SELF(Drive, unprotect); }
 
-
   const Drive &reset() const {
     return set_attributes(Attributes().set_flags(Flags::reset));
   }
   Drive &reset() { return API_CONST_CAST_SELF(Drive, reset); }
 
-
   const Drive &protect() const {
     return set_attributes(Attributes().set_flags(Flags::protect));
   }
   Drive &protect() { return API_CONST_CAST_SELF(Drive, protect); }
-
-
 
   bool is_busy() const {
     return ioctl(I_DRIVE_ISBUSY, nullptr).return_value() > 0;

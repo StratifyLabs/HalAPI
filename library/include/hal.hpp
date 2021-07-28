@@ -3,12 +3,12 @@
 #ifndef HALAPI_HAL_HPP_
 #define HALAPI_HAL_HPP_
 
-namespace hal {
-}
+namespace hal {}
 
 #include "hal/Adc.hpp"
 #include "hal/ByteBuffer.hpp"
 #include "hal/Drive.hpp"
+#include "hal/Flash.hpp"
 #include "hal/FrameBuffer.hpp"
 #include "hal/FrameStream.hpp"
 #include "hal/Gpio.hpp"

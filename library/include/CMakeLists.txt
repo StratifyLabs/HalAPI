@@ -9,6 +9,7 @@ set(SOURCES
 	hal/FrameBuffer.hpp
 	hal/FrameStream.hpp
 	hal/Drive.hpp
+	hal/Flash.hpp
 	hal/I2C.hpp
 	hal/I2S.hpp
 	hal/Gpio.hpp
