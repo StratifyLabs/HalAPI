@@ -139,7 +139,7 @@ public:
   }
 
   Info get_info() const {
-    uart_info_t info;
+    uart_info_t info = {};
     ioctl(I_UART_GETINFO, &info);
     return Info(info);
   }
