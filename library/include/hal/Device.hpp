@@ -31,7 +31,6 @@ public:
       : m_file(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   bool is_valid() const { return m_file.is_valid(); }
-#if 0
   DeviceObject(const DeviceObject &a) = delete;
   DeviceObject &operator=(const DeviceObject &a) = delete;
 
@@ -40,7 +39,6 @@ public:
     swap(a);
     return *this;
   }
-#endif
 
 #if !defined __link
 
@@ -86,7 +84,10 @@ protected:
 template <class Derived>
 class DeviceAccess : public DeviceObject, public fs::FileMemberAccess<Derived> {
 public:
-  DeviceAccess() : fs::FileMemberAccess<Derived>(m_file) {}
+  DeviceAccess() : fs::FileMemberAccess<Derived>(m_file){};
+
+  DeviceAccess(DeviceAccess && a) = default;
+  DeviceAccess& operator=(DeviceAccess && a) = default;
 
   DeviceAccess(
       const var::StringView path,
@@ -181,20 +182,19 @@ public:
 
 class Device : public DeviceAccess<Device> {
 public:
-  Device() {}
+  Device() = default;
   Device(var::StringView path,
          fs::OpenMode open_mode =
              DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : DeviceAccess(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  Device(const Device &a) = delete;
-  Device &operator=(const Device &a) = delete;
-
-  Device(Device &&a) { swap(a); }
-  Device &operator=(Device &&a) {
+#if 1
+  Device(Device &&a){ swap(a); }
+  Device &operator=(Device &&a){
     swap(a);
     return *this;
   }
+#endif
 };
 
 template <int VersionRequest> class DeviceType {
