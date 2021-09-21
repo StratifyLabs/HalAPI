@@ -33,7 +33,7 @@ public:
   explicit Pin(const mcu_pin_t pin FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
       : DeviceAccess("/dev/pio" & var::NumberString(pin.port),
                      fs::OpenMode::read_write()
-                     FSAPI_LINK_INHERIT_DRIVER_LAST) {
+                         FSAPI_LINK_INHERIT_DRIVER_LAST) {
     m_pinmask = (1 << pin.pin);
   }
 
@@ -54,7 +54,7 @@ public:
     return ioctl(I_PIO_SETATTR, &attr);
   }
 
-  Pin &set_input(Flags flags = Flags::null){
+  Pin &set_input(Flags flags = Flags::null) {
     return API_CONST_CAST_SELF(Pin, set_input, flags);
   }
 
@@ -65,7 +65,7 @@ public:
     return ioctl(I_PIO_SETATTR, &attr);
   }
 
-  Pin &set_output(Flags flags = Flags::null){
+  Pin &set_output(Flags flags = Flags::null) {
     return API_CONST_CAST_SELF(Pin, set_output, flags);
   }
 
@@ -74,7 +74,7 @@ public:
     return *this;
   }
 
-  Pin &wait(const chrono::MicroTime &a){
+  Pin &wait(const chrono::MicroTime &a) {
     chrono::wait(a);
     return *this;
   }
@@ -87,7 +87,6 @@ public:
   Pin &set_value(bool value = true) {
     return API_CONST_CAST_SELF(Pin, set_value, value);
   }
-
 
   bool get_value() const {
     u32 value;
@@ -111,6 +110,35 @@ public:
     set_input(o_restore_flags);
     return result;
   }
+
+  enum class IsActiveHigh {
+    no, yes
+  };
+
+  class PulseScope {
+  public:
+    PulseScope(Pin &pin, IsActiveHigh is_active_high = IsActiveHigh::yes) : m_pin(&pin), m_is_active_high(is_active_high) {
+      m_pin->set_value(is_active_high == IsActiveHigh::yes);
+    }
+
+    PulseScope(Pin * pin, IsActiveHigh is_active_high = IsActiveHigh::yes) : m_pin(pin), m_is_active_high(is_active_high) {
+      m_pin->set_value(is_active_high == IsActiveHigh::yes);
+    }
+
+    PulseScope() = delete;
+    PulseScope(const PulseScope &) = delete;
+    PulseScope(PulseScope &&) = delete;
+    PulseScope& operator=(const PulseScope &) = delete;
+    PulseScope& operator=(PulseScope &&) = delete;
+
+    ~PulseScope(){
+      m_pin->set_value(m_is_active_high == IsActiveHigh::no);
+    }
+
+  private:
+    Pin *m_pin;
+    IsActiveHigh m_is_active_high;
+  };
 
 private:
   u32 m_pinmask;
