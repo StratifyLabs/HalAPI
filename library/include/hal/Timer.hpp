@@ -99,7 +99,7 @@ public:
     const tmr_attr_t *attributes() const { return &m_attributes; }
   private:
     friend class Timer;
-    mutable tmr_attr_t m_attributes;
+    mutable tmr_attr_t m_attributes = {};
   };
 
   Timer(const var::StringView device,
