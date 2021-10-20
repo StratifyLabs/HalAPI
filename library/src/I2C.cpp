@@ -28,6 +28,22 @@ printer::operator<<(printer::Printer &printer, const hal::I2C::Info &a) {
   return printer;
 }
 
+printer::Printer &
+printer::operator<<(printer::Printer &printer, const hal::I2C::ScanResult &a) {
+  bool is_one_value_present = false;
+  for(const auto value: a){
+    if( value != 0 ){
+      is_one_value_present = true;
+      printer.key_bool(var::NumberString(value, "0x%02x"), true);
+    }
+  }
+  if( !is_one_value_present ){
+    printer.key("null", "no devices");
+  }
+  return printer;
+}
+
+
 
 I2C::ScanResult I2C::scan() const {
   ScanResult result;

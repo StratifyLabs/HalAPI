@@ -103,12 +103,12 @@ public:
 
   private:
     friend class I2C;
-    i2c_attr_t m_attributes;
+    i2c_attr_t m_attributes = {};
   };
 
   class Info {
   public:
-    Info() { m_info = {0}; }
+    Info() = default;
     Info(const i2c_info_t &info) : m_info(info) {}
     API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Info, u32, info, frequency, freq)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_events)
@@ -117,7 +117,7 @@ public:
 
   private:
     friend class I2C;
-    i2c_info_t m_info;
+    i2c_info_t m_info = {};
   };
 
   I2C(const var::StringView device,
@@ -211,6 +211,7 @@ private:
 namespace printer {
 Printer &operator<<(Printer &printer, const hal::I2C::Attributes &a);
 Printer &operator<<(Printer &printer, const hal::I2C::Info &a);
+Printer &operator<<(Printer &printer, const hal::I2C::ScanResult &a);
 } // namespace printer
 
 #endif /* HALAPI_HAL_I2C_HPP_ */
