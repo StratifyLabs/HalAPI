@@ -41,16 +41,14 @@ class Gpio : public DeviceAccess<Gpio>, public GpioFlags {
 public:
   class Attributes {
   public:
-    Attributes() : m_attributes{} {}
+    Attributes() = default;
 
-    Attributes(Flags o_flags, u32 o_pinmask) {
-      set_flags(o_flags);
-      set_pinmask(o_pinmask);
-    }
+    Attributes(Flags o_flags, u32 o_pinmask)
+      : m_attributes{.o_flags = u32(o_flags), .o_pinmask = o_pinmask} {}
 
-    u32 o_flags() const { return m_attributes.o_flags; }
-    Flags flags() const { return Flags(m_attributes.o_flags); }
-    u32 o_pinmask() const { return m_attributes.o_pinmask; }
+    API_NO_DISCARD u32 o_flags() const { return m_attributes.o_flags; }
+    API_NO_DISCARD Flags flags() const { return Flags(m_attributes.o_flags); }
+    API_NO_DISCARD u32 o_pinmask() const { return m_attributes.o_pinmask; }
 
     Attributes &set_flags(Flags value) {
       m_attributes.o_flags = static_cast<u32>(value);
@@ -63,22 +61,24 @@ public:
     }
 
     pio_attr_t *attributes() { return &m_attributes; }
-    const pio_attr_t *attributes() const { return &m_attributes; }
+    API_NO_DISCARD const pio_attr_t *attributes() const {
+      return &m_attributes;
+    }
 
   private:
     friend class Gpio;
-    pio_attr_t m_attributes;
+    pio_attr_t m_attributes{};
   };
 
   Gpio(const var::StringView device FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+    : DeviceAccess(device, DEVICE_OPEN_MODE FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  Gpio() {}
+  Gpio() = default;
   Gpio(const Gpio &a) = delete;
   Gpio &operator=(const Gpio &a) = delete;
 
-  Gpio(Gpio &&a) { swap(a); }
-  Gpio &operator=(Gpio &&a) {
+  Gpio(Gpio &&a) noexcept { swap(a); }
+  Gpio &operator=(Gpio &&a) noexcept {
     swap(a);
     return *this;
   }
@@ -86,22 +86,37 @@ public:
   Gpio &set_attributes(const Attributes &attributes) {
     return ioctl(I_PIO_SETATTR, (void *)&attributes.m_attributes);
   }
+
+  const Gpio &set_attributes(const Attributes &attributes) const {
+    return ioctl(I_PIO_SETATTR, (void *)&attributes.m_attributes);
+  }
+
+  const Gpio &set_mask(u32 mask) const {
+    return ioctl(I_PIO_SETMASK, MCU_INT_CAST(mask));
+  }
   Gpio &set_mask(u32 mask) { return ioctl(I_PIO_SETMASK, MCU_INT_CAST(mask)); }
+
   Gpio &clear_mask(u32 mask) {
     return ioctl(I_PIO_CLRMASK, MCU_INT_CAST(mask));
   }
+
+  const Gpio &clear_mask(u32 mask) const {
+    return ioctl(I_PIO_CLRMASK, MCU_INT_CAST(mask));
+  }
+
   Gpio &assign(u32 value) {
     return set_attributes(Attributes(Flags::assign, value));
   }
 
+  const Gpio &set_value(u32 value) const {
+    return ioctl(I_PIO_SET, MCU_INT_CAST(value));
+  }
   Gpio &set_value(u32 value) { return ioctl(I_PIO_SET, MCU_INT_CAST(value)); }
-  u32 get_value() const {
+  API_NO_DISCARD u32 get_value() const {
     u32 value;
     ioctl(I_PIO_GET, &value);
     return value;
   }
-
-
 };
 
 } // namespace hal

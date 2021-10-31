@@ -1,7 +1,7 @@
 // Copyright 2020-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
 
-#ifndef HALAPI_HAL_STREAMFFIFO_HPP_
-#define HALAPI_HAL_STREAMFFIFO_HPP_
+#ifndef HALAPI_HAL_FRAME_STREAM_HPP_
+#define HALAPI_HAL_FRAME_STREAM_HPP_
 
 #include <api/api.hpp>
 
@@ -11,67 +11,63 @@
 
 namespace hal {
 
-class StreamFFifo;
-
-class FrameStreamFlags {
+class FrameStream : public DeviceAccess<FrameStream> {
 public:
   enum class Flags {
     start = STREAM_FFIFO_FLAG_START,
     stop = STREAM_FFIFO_FLAG_STOP,
     flush = STREAM_FFIFO_FLAG_FLUSH
   };
-};
 
-API_OR_NAMED_FLAGS_OPERATOR(FrameStreamFlags, Flags)
-
-class FrameStream : public DeviceAccess<FrameStream>, public FrameStreamFlags {
-public:
   class ChannelInfo {
   public:
-    ChannelInfo(const stream_ffifo_channel_info_t &info) : m_info(info) {}
-    bool is_valid() const { return m_info.ffifo.frame_count != 0; }
-
-    FrameBuffer::Info frame_buffer_info() const { return m_info.ffifo; }
-
-    u32 access_count() const { return m_info.access_count; }
-    s32 error() const { return m_info.error; }
+    explicit ChannelInfo(const stream_ffifo_channel_info_t &info)
+      : m_info(&info) {}
+    API_NO_DISCARD bool is_valid() const {
+      return m_info->ffifo.frame_count != 0;
+    }
+    API_NO_DISCARD FrameBuffer::Info frame_buffer_info() const {
+      return FrameBuffer::Info(m_info->ffifo);
+    }
+    API_NO_DISCARD u32 access_count() const { return m_info->access_count; }
+    API_NO_DISCARD s32 error() const { return m_info->error; }
 
   private:
-    const stream_ffifo_channel_info_t &m_info;
+    const stream_ffifo_channel_info_t *m_info = nullptr;
   };
 
   class Info {
   public:
-    Info() : m_receive(m_info.rx), m_transmit(m_info.tx) { m_info = {0}; }
+    Info() : m_receive(m_info.rx), m_transmit(m_info.tx) {}
 
     Info(const stream_ffifo_info_t &info)
-        : m_receive(m_info.rx), m_transmit(m_info.tx) {
-      m_info = info;
-    }
+      : m_info(info), m_receive(m_info.rx), m_transmit(m_info.tx) {}
 
     operator stream_ffifo_info_t &() { return m_info; }
-    const stream_ffifo_info_t &info() const { return m_info; }
+    API_NO_DISCARD const stream_ffifo_info_t &info() const { return m_info; }
 
-    bool is_valid() const {
+    API_NO_DISCARD bool is_valid() const {
       return receive().is_valid() || transmit().is_valid();
     }
 
-    bool is_stopped() const {
+    API_NO_DISCARD bool is_stopped() const {
       return (m_info.o_status & STREAM_FFIFO_FLAG_STOP) == 0;
     }
 
-    bool is_running() const {
+    API_NO_DISCARD bool is_running() const {
       return (m_info.o_status & STREAM_FFIFO_FLAG_START) == 0;
     }
 
-    bool is_reset() const { return m_info.o_status == 0; }
+    API_NO_DISCARD bool is_reset() const { return m_info.o_status == 0; }
 
-    const ChannelInfo &receive() const { return m_receive; }
-    const ChannelInfo &transmit() const { return m_transmit; }
+    API_NO_DISCARD const ChannelInfo &receive() const { return m_receive; }
+    API_NO_DISCARD const ChannelInfo &transmit() const { return m_transmit; }
+
+    API_NO_DISCARD Flags flags() const { return Flags(m_info.o_flags); }
 
   private:
     friend class FrameStream;
-    stream_ffifo_info_t m_info;
+    stream_ffifo_info_t m_info{};
     ChannelInfo m_receive;
     ChannelInfo m_transmit;
   };
@@ -101,22 +97,28 @@ public:
     }
 
     stream_ffifo_attr_t *attributes() { return &m_attributes; }
-    const stream_ffifo_attr_t *attributes() const { return &m_attributes; }
+    API_NO_DISCARD const stream_ffifo_attr_t *attributes() const {
+      return &m_attributes;
+    }
+
+    API_NO_DISCARD Flags flags() const { return Flags(m_attributes.o_flags); }
+
   private:
     friend class FrameStream;
     stream_ffifo_attr_t m_attributes;
   };
-  FrameStream(const var::StringView device,
-              fs::OpenMode open_mode =
-                  DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  explicit FrameStream(
+    const var::StringView device,
+    fs::OpenMode open_mode
+    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  FrameStream() {}
+  FrameStream() = default;
   FrameStream(const FrameStream &a) = delete;
   FrameStream &operator=(const FrameStream &a) = delete;
 
-  FrameStream(FrameStream &&a) { swap(a); }
-  FrameStream &operator=(FrameStream &&a) {
+  FrameStream(FrameStream &&a) noexcept { swap(a); }
+  FrameStream &operator=(FrameStream &&a) noexcept {
     swap(a);
     return *this;
   }
@@ -135,13 +137,21 @@ public:
     return ioctl(I_STREAM_FFIFO_SETATTR, (void *)&attr.m_attributes);
   }
 
-  Info get_info() const {
+  API_NO_DISCARD Info get_info() const {
     stream_ffifo_info_t info;
     ioctl(I_STREAM_FFIFO_GETINFO, &info);
-    return Info(info);
+    return {info};
   }
 };
 
+API_OR_NAMED_FLAGS_OPERATOR(FrameStream, Flags)
+
 } // namespace hal
 
-#endif // HALAPI_HAL_STREAMFFIFO_HPP_
+namespace printer {
+Printer &operator<<(Printer &printer, const hal::FrameStream::Attributes &a);
+Printer &operator<<(Printer &printer, const hal::FrameStream::Info &a);
+Printer &operator<<(Printer &printer, const hal::FrameStream::ChannelInfo &a);
+} // namespace printer
+
+#endif // HALAPI_HAL_FRAME_STREAM_HPP_

@@ -7,20 +7,13 @@
 #include "sys.hpp"
 #include "var.hpp"
 
-
 #include "test/Test.hpp"
 
 class UnitTest : public test::Test {
 public:
-
   UnitTest(var::StringView name) : test::Test(name) {}
 
-  bool execute_class_api_case() {
-
-
-
-    return true;
-  }
+  bool execute_class_api_case() { return true; }
 
 private:
 };

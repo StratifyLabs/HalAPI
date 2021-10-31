@@ -5,7 +5,6 @@
 
 #include "hal/Gpio.hpp"
 
-
 using namespace hal;
 
 printer::Printer &

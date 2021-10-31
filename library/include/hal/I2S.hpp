@@ -58,83 +58,102 @@ public:
       var::View(m_attributes.pin_assignment).fill<u8>(0xff);
     }
 
-    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, mcu_pin_t,
-                                  attributes.pin_assignment, ws)
+    API_ACCESS_MEMBER_FUNDAMENTAL(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      ws)
 
-    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, mcu_pin_t,
-                                  attributes.pin_assignment, sck)
+    API_ACCESS_MEMBER_FUNDAMENTAL(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      sck)
 
-    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, mcu_pin_t,
-                                  attributes.pin_assignment, sdout)
+    API_ACCESS_MEMBER_FUNDAMENTAL(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      sdout)
 
-    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, mcu_pin_t,
-                                  attributes.pin_assignment, sdin)
+    API_ACCESS_MEMBER_FUNDAMENTAL(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      sdin)
 
-    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, mcu_pin_t,
-                                  attributes.pin_assignment, mck)
-
+    API_ACCESS_MEMBER_FUNDAMENTAL(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      mck)
 
     Attributes &set_flags(Flags value) {
       m_attributes.o_flags = static_cast<u32>(value);
       return *this;
     }
 
-    Flags flags() const {
-      return Flags(m_attributes.o_flags);
-    }
+    API_NO_DISCARD Flags flags() const { return Flags(m_attributes.o_flags); }
 
-    u32 o_flags() const {
-      return m_attributes.o_flags;
-    }
+    API_NO_DISCARD u32 o_flags() const { return m_attributes.o_flags; }
 
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, u32, attributes,
-                                             frequency, freq)
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      u32,
+      attributes,
+      frequency,
+      freq)
 
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, u32, attributes,
-                                             master_multiplier, mck_mult)
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      u32,
+      attributes,
+      master_multiplier,
+      mck_mult)
 
-    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u32,
-                                  attributes, slot)
+    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u32, attributes, slot)
 
     i2s_attr_t *attributes() { return &m_attributes; }
-    const i2s_attr_t *attributes() const { return &m_attributes; }
+    API_NO_DISCARD const i2s_attr_t *attributes() const {
+      return &m_attributes;
+    }
 
   private:
     friend class I2S;
-    i2s_attr_t m_attributes;
+    i2s_attr_t m_attributes{};
   };
 
   class Info {
   public:
-    Info() { m_info = {0}; }
-    Info(const i2s_info_t &info) : m_info(info) {}
+    Info() = default;
+    explicit Info(const i2s_info_t &info) : m_info(info) {}
     API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Info, u32, info, frequency, freq)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_events)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_flags)
-    Flags flags() const { return Flags(m_info.o_flags); }
+    API_NO_DISCARD Flags flags() const { return Flags(m_info.o_flags); }
 
   private:
     friend class I2S;
-    i2s_info_t m_info;
+    i2s_info_t m_info{};
   };
 
-  I2S(const var::StringView device,
-      fs::OpenMode open_mode =
-          DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  explicit I2S(
+    const var::StringView device,
+    fs::OpenMode open_mode
+    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  I2S() {}
+  I2S() = default;
   I2S(const I2S &a) = delete;
   I2S &operator=(const I2S &a) = delete;
 
-  I2S(I2S &&a) { swap(a); }
-  I2S &operator=(I2S &&a) {
+  I2S(I2S &&a) noexcept { swap(a); }
+  I2S &operator=(I2S &&a) noexcept {
     swap(a);
     return *this;
   }
 
   const I2S &set_attributes() const { return ioctl(I_I2S_SETATTR, nullptr); }
-
   I2S &set_attributes() { return API_CONST_CAST_SELF(I2S, set_attributes); }
 
   const I2S &set_attributes(const Attributes &attributes) const {
@@ -145,28 +164,19 @@ public:
     return API_CONST_CAST_SELF(I2S, set_attributes, attributes);
   }
 
-  Info get_info() {
+  API_NO_DISCARD Info get_info() {
     i2s_info_t info;
     ioctl(I_I2S_GETINFO, &info);
     return Info(info);
   }
 
-  const I2S &mute() const {
-    return ioctl(I_I2S_MUTE, nullptr);
-  }
+  const I2S &mute() const { return ioctl(I_I2S_MUTE, nullptr); }
 
-  I2S &mute(){
-    return ioctl(I_I2S_MUTE, nullptr);
-  }
+  I2S &mute() { return ioctl(I_I2S_MUTE, nullptr); }
 
+  const I2S &unmute() const { return ioctl(I_I2S_UNMUTE, nullptr); }
 
-  const I2S &unmute() const {
-    return ioctl(I_I2S_UNMUTE, nullptr);
-  }
-
-  I2S &unmute(){
-    return ioctl(I_I2S_UNMUTE, nullptr);
-  }
+  I2S &unmute() { return ioctl(I_I2S_UNMUTE, nullptr); }
 
 private:
 };

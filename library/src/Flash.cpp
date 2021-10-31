@@ -2,7 +2,6 @@
 
 #include <printer/Printer.hpp>
 
-
 printer::Printer &
 printer::operator<<(printer::Printer &printer, const hal::Flash::PageInfo &a) {
   return printer.key("page", var::NumberString(a.page()))
@@ -23,11 +22,11 @@ var::Vector<Flash::PageInfo> Flash::get_page_info() const {
   u32 count = 0;
 
   // first count the pages
-  bool is_done = false;
+  bool is_done;
   do {
     api::ErrorScope es;
     const auto info = get_page_info(count);
-    is_done = info.is_valid() == false;
+    is_done = !info.is_valid();
     if (!is_done) {
       count++;
     }
@@ -44,7 +43,7 @@ var::Vector<Flash::PageInfo> Flash::get_page_info() const {
   do {
     api::ErrorScope es;
     const auto info = get_page_info(count);
-    is_done = info.is_valid() == false;
+    is_done = !info.is_valid();
     if (!is_done) {
       count++;
       result.push_back(info);

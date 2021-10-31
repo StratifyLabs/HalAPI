@@ -3,9 +3,9 @@
 #ifndef HALAPI_HAL_BYTE_BUFFER_HPP_
 #define HALAPI_HAL_BYTE_BUFFER_HPP_
 
-#include "Device.hpp"
-#include <cstring>
 #include <sos/dev/fifo.h>
+
+#include "Device.hpp"
 
 namespace hal {
 
@@ -33,26 +33,25 @@ public:
    */
   class Info {
   public:
-    Info() { m_info = {0}; }
+    Info() = default;
 
     Info(const fifo_info_t &info) : m_info(info) {}
 
-    bool is_valid() const { return m_info.size > 0; }
-    u32 size_ready() const { return m_info.size_ready; }
-    u32 size() const { return m_info.size; }
+    API_NO_DISCARD bool is_valid() const { return m_info.size > 0; }
+    API_NO_DISCARD u32 size_ready() const { return m_info.size_ready; }
+    API_NO_DISCARD u32 size() const { return m_info.size; }
 
-    bool is_overflow() const { return m_info.overflow != 0; }
-    bool overflow() const { return m_info.overflow != 0; }
+    API_NO_DISCARD bool is_overflow() const { return m_info.overflow != 0; }
+    API_NO_DISCARD bool overflow() const { return m_info.overflow != 0; }
 
   private:
     friend class ByteBuffer;
-    fifo_info_t m_info;
+    fifo_info_t m_info{};
   };
 
   class Attributes {
   public:
-    Attributes() { m_attributes = {0}; }
-
+    Attributes() = default;
     Attributes(const fifo_attr_t &attr) : m_attributes(attr) {}
 
     Attributes &set_initialize() {
@@ -72,27 +71,32 @@ public:
       return *this;
     }
 
-    Flags flags() const { return static_cast<Flags>(m_attributes.o_flags); }
+    API_NO_DISCARD Flags flags() const {
+      return static_cast<Flags>(m_attributes.o_flags);
+    }
 
     fifo_attr_t *attributes() { return &m_attributes; }
-    const fifo_attr_t *attributes() const { return &m_attributes; }
+    API_NO_DISCARD const fifo_attr_t *attributes() const {
+      return &m_attributes;
+    }
 
   private:
     friend class ByteBuffer;
-    fifo_attr_t m_attributes;
+    fifo_attr_t m_attributes{};
   };
 
-  ByteBuffer(const var::StringView device,
-             fs::OpenMode open_mode =
-                 DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  ByteBuffer(
+    const var::StringView device,
+    fs::OpenMode open_mode
+    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   ByteBuffer() {}
   ByteBuffer(const ByteBuffer &a) = delete;
   ByteBuffer &operator=(const ByteBuffer &a) = delete;
 
-  ByteBuffer(ByteBuffer &&a) { swap(a); }
-  ByteBuffer &operator=(ByteBuffer &&a) {
+  ByteBuffer(ByteBuffer &&a) noexcept { swap(a); }
+  ByteBuffer &operator=(ByteBuffer &&a) noexcept {
     swap(a);
     return *this;
   }
@@ -101,11 +105,11 @@ public:
     return ioctl(I_FIFO_SETATTR, &attr.m_attributes);
   }
 
-  ByteBuffer &set_attributes(Attributes &attr){
+  ByteBuffer &set_attributes(Attributes &attr) {
     return API_CONST_CAST_SELF(ByteBuffer, set_attributes, attr);
   }
 
-  Info get_info() const {
+  API_NO_DISCARD Info get_info() const {
     fifo_info_t info;
     ioctl(I_FIFO_GETINFO, &info);
     return Info(info);

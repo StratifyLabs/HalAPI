@@ -44,75 +44,82 @@ class Usb : public DeviceAccess<Usb>, public UsbFlags {
 public:
   class Attributes {
   public:
-    Attributes() {
-      var::View(m_attributes.pin_assignment).fill<u8>(0xff);
-    }
+    Attributes() { var::View(m_attributes.pin_assignment).fill<u8>(0xff); }
 
-    bool is_valid() const { return frequency() != 0; }
+    API_NO_DISCARD bool is_valid() const { return frequency() != 0; }
 
-    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, mcu_pin_t,
-                                  attributes.pin_assignment, dp)
-    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, mcu_pin_t,
-                                  attributes.pin_assignment, dm)
-    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, mcu_pin_t,
-                                  attributes.pin_assignment, id)
-    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, mcu_pin_t,
-                                  attributes.pin_assignment, vbus)
+    API_ACCESS_MEMBER_FUNDAMENTAL(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      dp)
+    API_ACCESS_MEMBER_FUNDAMENTAL(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      dm)
+    API_ACCESS_MEMBER_FUNDAMENTAL(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      id)
+    API_ACCESS_MEMBER_FUNDAMENTAL(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      vbus)
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u32, attributes, address)
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u32, attributes, max_packet_size)
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u32, attributes, type)
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, u32, attributes,
-                                             frequency, freq)
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      u32,
+      attributes,
+      frequency,
+      freq)
 
     Attributes &set_flags(Flags value) {
       m_attributes.o_flags = static_cast<u32>(value);
       return *this;
     }
 
-    Flags flags() const {
-      return Flags(m_attributes.o_flags);
-    }
+    API_NO_DISCARD Flags flags() const { return Flags(m_attributes.o_flags); }
 
-    u32 o_flags() const {
-      return m_attributes.o_flags;
-    }
+    API_NO_DISCARD u32 o_flags() const { return m_attributes.o_flags; }
 
     usb_attr_t *attributes() { return &m_attributes; }
-    const usb_attr_t *attributes() const { return &m_attributes; }
+    API_NO_DISCARD const usb_attr_t *attributes() const {
+      return &m_attributes;
+    }
 
   private:
     friend class Usb;
-    usb_attr_t m_attributes;
+    usb_attr_t m_attributes{};
   };
 
   class Info {
   public:
-    Info() { m_info = {0}; }
-    Info(const usb_info_t &info) { m_info = info; }
+    Info() = default;
+    explicit Info(const usb_info_t &info) { m_info = info; }
 
-    Flags flags() const{
-      return Flags(m_info.o_flags);
-    }
+    API_NO_DISCARD Flags flags() const { return Flags(m_info.o_flags); }
 
-    u32 o_flags() const {
-      return m_info.o_flags;
-    }
+    API_NO_DISCARD u32 o_flags() const { return m_info.o_flags; }
 
-    u32 o_events() const {
-      return m_info.o_events;
-    }
+    API_NO_DISCARD u32 o_events() const { return m_info.o_events; }
 
   private:
     friend class Usb;
-    usb_info_t m_info;
+    usb_info_t m_info{};
   };
 
-  Usb(const var::StringView device,
-      fs::OpenMode open_mode =
-          DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  explicit Usb(
+    const var::StringView device,
+    fs::OpenMode open_mode
+    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  Usb() {}
+  Usb() = default;
   Usb(const Usb &a) = delete;
   Usb &operator=(const Usb &a) = delete;
 
@@ -122,7 +129,7 @@ public:
     return *this;
   }
 
-  int get_version() const {
+  API_NO_DISCARD int get_version() const {
     return ioctl(I_USB_GETVERSION, nullptr).return_value();
   }
 
@@ -137,53 +144,41 @@ public:
     return ioctl(I_USB_SETATTR, (void *)&attr.m_attributes);
   }
 
-  const Usb & attach() const {
+  const Usb &attach() const {
     return set_attributes(Attributes().set_flags(Flags::attach));
   }
 
-  Usb & attach(){
-    return API_CONST_CAST_SELF(Usb, attach);
-  }
+  Usb &attach() { return API_CONST_CAST_SELF(Usb, attach); }
 
-  const Usb & detach() const {
+  const Usb &detach() const {
     return set_attributes(Attributes().set_flags(Flags::detach));
   }
 
-  Usb & detach(){
-    return API_CONST_CAST_SELF(Usb, detach);
-  }
+  Usb &detach() { return API_CONST_CAST_SELF(Usb, detach); }
 
-  const Usb & reset() const {
+  const Usb &reset() const {
     return set_attributes(Attributes().set_flags(Flags::reset));
   }
 
-  Usb & reset(){
-    return API_CONST_CAST_SELF(Usb, reset);
-  }
+  Usb &reset() { return API_CONST_CAST_SELF(Usb, reset); }
 
-  const Usb & configure() const {
+  const Usb &configure() const {
     return set_attributes(Attributes().set_flags(Flags::configure));
   }
 
-  Usb & configure(){
-    return API_CONST_CAST_SELF(Usb, configure);
-  }
+  Usb &configure() { return API_CONST_CAST_SELF(Usb, configure); }
 
-  const Usb & unconfigure() const {
+  const Usb &unconfigure() const {
     return set_attributes(Attributes().set_flags(Flags::unconfigure));
   }
 
-  Usb & unconfigure(){
-    return API_CONST_CAST_SELF(Usb, unconfigure);
-  }
+  Usb &unconfigure() { return API_CONST_CAST_SELF(Usb, unconfigure); }
 
-
-  bool is_connected() const {
+  API_NO_DISCARD bool is_connected() const {
     return ioctl(I_USB_ISCONNECTED, nullptr).return_value() != 0;
   }
 
-
-  Info get_info() const {
+  API_NO_DISCARD Info get_info() const {
     usb_info_t info;
     ioctl(I_USB_GETINFO, &info);
     return Info(info);

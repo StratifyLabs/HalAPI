@@ -43,12 +43,10 @@ void DeviceObject::transfer(const Transfer &options) const {
   }
 }
 
-
 void DeviceObject::set_interrupt_priority(int priority, int request) const {
-  mcu_action_t action;
-  memset(&action, 0, sizeof(action));
-  action.o_events = MCU_EVENT_FLAG_SET_PRIORITY;
-  action.prio = priority;
+  mcu_action_t action{
+    .prio = s8(priority),
+    .o_events = MCU_EVENT_FLAG_SET_PRIORITY};
   m_file.ioctl(request, &action);
 }
 #endif

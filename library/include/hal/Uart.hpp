@@ -38,7 +38,7 @@ public:
       var::View(m_attributes.pin_assignment).fill<u8>(0xff);
     }
 
-    bool is_valid() const { return frequency() != 0; }
+    API_NO_DISCARD bool is_valid() const { return frequency() != 0; }
 
     API_ACCESS_MEMBER_FUNDAMENTAL(
       Attributes,
@@ -74,44 +74,49 @@ public:
     }
 
     uart_attr_t *attributes() { return &m_attributes; }
-    const uart_attr_t *attributes() const { return &m_attributes; }
+    API_NO_DISCARD const uart_attr_t *attributes() const {
+      return &m_attributes;
+    }
+
   private:
     friend class Uart;
-    uart_attr_t m_attributes;
+    uart_attr_t m_attributes{};
   };
 
   class Info {
   public:
-    Info() { m_info = {0}; }
-    Info(const uart_info_t &info) { m_info = info; }
+    Info() = default;
+    explicit Info(const uart_info_t &info) { m_info = info; }
 
-
-    bool is_valid() const { return m_info.o_flags != 0; }
-    bool is_rx_fifo() const { return m_info.o_flags & UART_FLAG_IS_RX_FIFO; }
-    u32 size() const { return m_info.size; }
-    u32 size_ready() const { return m_info.size_ready; }
+    API_NO_DISCARD bool is_valid() const { return m_info.o_flags != 0; }
+    API_NO_DISCARD bool is_rx_fifo() const {
+      return m_info.o_flags & UART_FLAG_IS_RX_FIFO;
+    }
+    API_NO_DISCARD u32 size() const { return m_info.size; }
+    API_NO_DISCARD u32 size_ready() const { return m_info.size_ready; }
 
   private:
     friend class Uart;
-    uart_info_t m_info;
+    uart_info_t m_info{};
   };
 
-  Uart(const var::StringView device,
-       fs::OpenMode open_mode =
-           DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  explicit Uart(
+    const var::StringView device,
+    fs::OpenMode open_mode
+    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  Uart() {}
+  Uart() = default;
   Uart(const Uart &a) = delete;
   Uart &operator=(const Uart &a) = delete;
 
-  Uart(Uart &&a) { swap(a); }
-  Uart &operator=(Uart &&a) {
+  Uart(Uart &&a) noexcept { swap(a); }
+  Uart &operator=(Uart &&a) noexcept {
     swap(a);
     return *this;
   }
 
-  int get_version() const {
+  API_NO_DISCARD int get_version() const {
     return ioctl(I_UART_GETVERSION, nullptr).return_value();
   }
 
@@ -132,13 +137,13 @@ public:
   Uart &flush() { return ioctl(I_UART_FLUSH, nullptr); }
   const Uart &flush() const { return ioctl(I_UART_FLUSH, nullptr); }
 
-  char get() const {
+  API_NO_DISCARD char get() const {
     char c;
     ioctl(I_UART_GET, &c);
     return c;
   }
 
-  Info get_info() const {
+  API_NO_DISCARD Info get_info() const {
     uart_info_t info = {};
     ioctl(I_UART_GETINFO, &info);
     return Info(info);

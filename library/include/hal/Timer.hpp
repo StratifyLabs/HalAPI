@@ -31,10 +31,10 @@ struct TimerFlags {
     is_channel_reset_on_match = TMR_FLAG_IS_CHANNEL_RESET_ON_MATCH,
     is_channel_stop_on_match = TMR_FLAG_IS_CHANNEL_STOP_ON_MATCH,
     is_channel_set_output_on_match = TMR_FLAG_IS_CHANNEL_SET_OUTPUT_ON_MATCH,
-    is_channel_clear_output_on_match =
-        TMR_FLAG_IS_CHANNEL_CLEAR_OUTPUT_ON_MATCH,
-    is_channel_toggle_output_on_match =
-        TMR_FLAG_IS_CHANNEL_TOGGLE_OUTPUT_ON_MATCH,
+    is_channel_clear_output_on_match
+    = TMR_FLAG_IS_CHANNEL_CLEAR_OUTPUT_ON_MATCH,
+    is_channel_toggle_output_on_match
+    = TMR_FLAG_IS_CHANNEL_TOGGLE_OUTPUT_ON_MATCH,
     is_channel_pwm_mode = TMR_FLAG_IS_CHANNEL_PWM_MODE,
     set_trigger = TMR_FLAG_SET_TRIGGER,
     is_slave = TMR_FLAG_IS_SLAVE,
@@ -55,14 +55,14 @@ class Timer : public DeviceAccess<Timer>, public TimerFlags {
 public:
   class Info {
   public:
-    Info() { m_info = {0}; }
-    Info(const tmr_info_t &info) { m_info = info; }
-    bool is_valid() const { return m_info.o_flags != 0; }
+    Info() = default;
+    explicit Info(const tmr_info_t &info) { m_info = info; }
+    API_NO_DISCARD bool is_valid() const { return m_info.o_flags != 0; }
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_flags)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_events)
   private:
     friend class Timer;
-    tmr_info_t m_info;
+    tmr_info_t m_info{};
   };
 
   class Attributes {
@@ -74,45 +74,68 @@ public:
       return *this;
     }
 
-    Flags flags() const { return Flags(m_attributes.o_flags); }
-    u32 o_flags() const { return m_attributes.o_flags; }
+    API_NO_DISCARD Flags flags() const { return Flags(m_attributes.o_flags); }
+    API_NO_DISCARD u32 o_flags() const { return m_attributes.o_flags; }
 
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, u32, attributes,
-                                             frequency, freq)
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      u32,
+      attributes,
+      frequency,
+      freq)
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u32, attributes, period)
-    API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, mcu_channel_t, attributes,
-                                  channel)
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, mcu_pin_t,
-                                             attributes.pin_assignment,
-                                             channel0, channel[0])
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, mcu_pin_t,
-                                             attributes.pin_assignment,
-                                             channel1, channel[1])
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, mcu_pin_t,
-                                             attributes.pin_assignment,
-                                             channel2, channel[2])
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, mcu_pin_t,
-                                             attributes.pin_assignment,
-                                             channel3, channel[3])
+    API_ACCESS_MEMBER_FUNDAMENTAL(
+      Attributes,
+      mcu_channel_t,
+      attributes,
+      channel)
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      channel0,
+      channel[0])
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      channel1,
+      channel[1])
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      channel2,
+      channel[2])
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      channel3,
+      channel[3])
 
     tmr_attr_t *attributes() { return &m_attributes; }
-    const tmr_attr_t *attributes() const { return &m_attributes; }
+    API_NO_DISCARD const tmr_attr_t *attributes() const {
+      return &m_attributes;
+    }
+
   private:
     friend class Timer;
     mutable tmr_attr_t m_attributes = {};
   };
 
-  Timer(const var::StringView device,
-        fs::OpenMode open_mode =
-            DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  explicit Timer(
+    const var::StringView device,
+    fs::OpenMode open_mode
+    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  Timer() {}
+  Timer() = default;
   Timer(const Timer &a) = delete;
   Timer &operator=(const Timer &a) = delete;
 
-  Timer(Timer &&a) { DeviceAccess<Timer>::swap(a); }
-  Timer &operator=(Timer &&a) {
+  Timer(Timer &&a) noexcept { DeviceAccess<Timer>::swap(a); }
+  Timer &operator=(Timer &&a) noexcept {
     DeviceAccess<Timer>::swap(a);
     return *this;
   }
@@ -128,12 +151,12 @@ public:
     return ioctl(I_TMR_SETATTR, &attributes.m_attributes);
   }
 
-	Timer &set_value(u32 value) { return ioctl(I_TMR_SET, MCU_INT_CAST(value)); }
+  Timer &set_value(u32 value) { return ioctl(I_TMR_SET, MCU_INT_CAST(value)); }
   const Timer &set_value(const Attributes &attributes) const {
     return ioctl(I_TMR_SET, &attributes.m_attributes);
   }
 
-  u32 get_value() const {
+  API_NO_DISCARD u32 get_value() const {
     u32 value = 0;
     ioctl(I_TMR_GET, &value);
     return value;
@@ -152,13 +175,13 @@ public:
     return ioctl(I_TMR_SETCHANNEL, (void *)&channel);
   }
 
-  u32 get_channel(u32 offset) const {
+  API_NO_DISCARD u32 get_channel(u32 offset) const {
     mcu_channel_t channel = {offset, 0};
     ioctl(I_TMR_GETCHANNEL, &channel);
     return channel.value;
   }
 
-  Info get_info() const {
+  API_NO_DISCARD Info get_info() const {
     tmr_info_t info;
     ioctl(I_TMR_GETINFO, &info);
     return Info(info);

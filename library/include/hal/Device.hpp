@@ -25,17 +25,18 @@ public:
 
   DeviceObject() {}
 
-  DeviceObject(var::StringView path,
-               fs::OpenMode open_mode =
-                   DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : m_file(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  explicit DeviceObject(
+    var::StringView path,
+    fs::OpenMode open_mode
+    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : m_file(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  bool is_valid() const { return m_file.is_valid(); }
+  API_NO_DISCARD bool is_valid() const { return m_file.is_valid(); }
   DeviceObject(const DeviceObject &a) = delete;
   DeviceObject &operator=(const DeviceObject &a) = delete;
 
-  DeviceObject(DeviceObject &&a) { swap(a); }
-  DeviceObject &operator=(DeviceObject &&a) {
+  DeviceObject(DeviceObject &&a) noexcept { swap(a); }
+  DeviceObject &operator=(DeviceObject &&a) noexcept {
     swap(a);
     return *this;
   }
@@ -47,15 +48,16 @@ public:
     API_AC(Transfer, var::View, destination);
   };
 
-  const fs::File &file() const { return m_file; }
+  API_NO_DISCARD const fs::File &file() const { return m_file; }
   fs::File &file() { return m_file; }
 
 protected:
-  void set_interrupt_priority(int priority,
-                              int request = I_MCU_SETACTION) const;
+  void
+  set_interrupt_priority(int priority, int request = I_MCU_SETACTION) const;
 
-  void set_signal_action(const DeviceSignal &signal,
-                         const DeviceSignal::CreateAction &options) {
+  void set_signal_action(
+    const DeviceSignal &signal,
+    const DeviceSignal::CreateAction &options) {
     mcu_action_t action = signal.create_action(options);
     m_file.ioctl(I_MCU_SETACTION, &action);
   }
@@ -86,21 +88,21 @@ class DeviceAccess : public DeviceObject, public fs::FileMemberAccess<Derived> {
 public:
   DeviceAccess() : fs::FileMemberAccess<Derived>(m_file){};
 
-  DeviceAccess(DeviceAccess && a) = default;
-  DeviceAccess& operator=(DeviceAccess && a) = default;
+  DeviceAccess(DeviceAccess &&a) noexcept = default;
+  DeviceAccess &operator=(DeviceAccess &&a) noexcept = default;
 
-  DeviceAccess(
-      const var::StringView path,
-      fs::OpenMode open_mode = fs::OpenMode::read_write()
+  explicit DeviceAccess(
+    const var::StringView path,
+    fs::OpenMode open_mode = fs::OpenMode::read_write()
 #if defined __link
-                                   .set_non_blocking()
+                               .set_non_blocking()
 #endif
-                                       FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceObject(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST),
-        fs::FileMemberAccess<Derived>(m_file) {
+                                 FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceObject(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST),
+      fs::FileMemberAccess<Derived>(m_file) {
   }
 
-  int fileno() const { return m_file.fileno(); }
+  API_NO_DISCARD int fileno() const { return m_file.fileno(); }
 
   Derived &&move() { return static_cast<Derived &&>(std::move(*this)); }
 
@@ -135,12 +137,12 @@ public:
     return static_cast<Derived &>(*this);
   }
 
-  const Derived &set_interrupt_priority(int priority) const{
+  const Derived &set_interrupt_priority(int priority) const {
     DeviceObject::set_interrupt_priority(priority);
     return static_cast<Derived &>(*this);
   }
 
-  Derived &set_interrupt_priority(int priority){
+  Derived &set_interrupt_priority(int priority) {
     DeviceObject::set_interrupt_priority(priority);
     return static_cast<Derived &>(*this);
   }
@@ -183,18 +185,17 @@ public:
 class Device : public DeviceAccess<Device> {
 public:
   Device() = default;
-  Device(var::StringView path,
-         fs::OpenMode open_mode =
-             DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  Device(
+    var::StringView path,
+    fs::OpenMode open_mode
+    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceAccess(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-#if 1
-  Device(Device &&a){ swap(a); }
-  Device &operator=(Device &&a){
+  Device(Device &&a) noexcept { swap(a); }
+  Device &operator=(Device &&a) noexcept {
     swap(a);
     return *this;
   }
-#endif
 };
 
 template <int VersionRequest> class DeviceType {

@@ -36,14 +36,18 @@ public:
   class Info {
   public:
     Info() : m_info{} {}
-    Info(const adc_info_t &info) : m_info(info) {}
-    bool is_valid() const { return m_info.o_flags != 0; }
+    explicit Info(const adc_info_t &info) : m_info(info) {}
+    API_NO_DISCARD bool is_valid() const { return m_info.o_flags != 0; }
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_flags)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_events)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, maximum)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, reference_mv)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, internal_vref_channel)
-    API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, internal_temperature_channel)
+    API_READ_ACCESS_MEMBER_FUNDAMENTAL(
+      Info,
+      u32,
+      info,
+      internal_temperature_channel)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, internal_vbat_channel)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, bytes_per_sample)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, resolution)
@@ -83,26 +87,42 @@ public:
     }
 
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u8, attributes, width)
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, u32, attributes,
-                                             frequency, freq)
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      u32,
+      attributes,
+      frequency,
+      freq)
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, mcu_pin_t, attributes, trigger)
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u8, attributes, channel_count)
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u16, attributes, channel)
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u32, attributes, rank)
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u32, attributes, sampling_time)
 
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, mcu_pin_t,
-                                             attributes.pin_assignment,
-                                             channel0, channel[0])
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, mcu_pin_t,
-                                             attributes.pin_assignment,
-                                             channel1, channel[1])
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, mcu_pin_t,
-                                             attributes.pin_assignment,
-                                             channel2, channel[2])
-    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Attributes, mcu_pin_t,
-                                             attributes.pin_assignment,
-                                             channel3, channel[3])
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      channel0,
+      channel[0])
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      channel1,
+      channel[1])
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      channel2,
+      channel[2])
+    API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
+      Attributes,
+      mcu_pin_t,
+      attributes.pin_assignment,
+      channel3,
+      channel[3])
 
     adc_attr_t *attributes() { return &m_attributes; }
     const adc_attr_t *attributes() const { return &m_attributes; }
@@ -112,17 +132,18 @@ public:
     mutable adc_attr_t m_attributes;
   };
 
-  Adc(const var::StringView device,
-      fs::OpenMode open_mode =
-          DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  Adc(
+    const var::StringView device,
+    fs::OpenMode open_mode
+    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  Adc() {}
+  Adc() = default;
   Adc(const Adc &a) = delete;
   Adc &operator=(const Adc &a) = delete;
 
-  Adc(Adc &&a) { DeviceAccess<Adc>::swap(a); }
-  Adc &operator=(Adc &&a) {
+  Adc(Adc &&a) noexcept { DeviceAccess<Adc>::swap(a); }
+  Adc &operator=(Adc &&a) noexcept {
     DeviceAccess<Adc>::swap(a);
     return *this;
   }
@@ -138,7 +159,7 @@ public:
     return ioctl(I_ADC_SETATTR, &attributes.m_attributes);
   }
 
-  Info get_info() {
+  API_NO_DISCARD Info get_info() {
     adc_info_t info;
     ioctl(I_ADC_GETINFO, &info);
     return Info(info);

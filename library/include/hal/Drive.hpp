@@ -30,20 +30,22 @@ class Drive : public DeviceAccess<Drive>, public DriveFlags {
 public:
   class Info {
   public:
-    Info() { m_info = {}; }
+    Info() = default;
     explicit Info(const drive_info_t &info) : m_info(info) {}
 
-    bool is_valid() const { return m_info.num_write_blocks != 0; }
+    API_NO_DISCARD bool is_valid() const {
+      return m_info.num_write_blocks != 0;
+    }
 
-    u64 size() const {
+    API_NO_DISCARD u64 size() const {
       return m_info.num_write_blocks * m_info.write_block_size;
     }
 
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_flags)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_events)
 
-    Flags flags() const { return Flags(m_info.o_flags); }
-    Flags events() const { return Flags(m_info.o_events); }
+    API_NO_DISCARD Flags flags() const { return Flags(m_info.o_flags); }
+    API_NO_DISCARD Flags events() const { return Flags(m_info.o_events); }
 
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u16, info, addressable_size)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u16, info, write_block_size)
@@ -51,25 +53,27 @@ public:
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, erase_block_size)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, bitrate)
 
-    u32 frequency() const { return m_info.bitrate; }
+    API_NO_DISCARD u32 frequency() const { return m_info.bitrate; }
 
-    chrono::MicroTime erase_device_time() const {
+    API_NO_DISCARD chrono::MicroTime erase_device_time() const {
       return chrono::MicroTime(m_info.erase_device_time);
     }
 
-    chrono::MicroTime erase_block_time() const {
+    API_NO_DISCARD chrono::MicroTime erase_block_time() const {
       return chrono::MicroTime(m_info.erase_block_time);
     }
 
-    u32 page_program_size() const { return m_info.page_program_size; }
+    API_NO_DISCARD u32 page_program_size() const {
+      return m_info.page_program_size;
+    }
 
   private:
-    drive_info_t m_info;
+    drive_info_t m_info{};
   };
 
   class Attributes {
   public:
-    Attributes() { m_attributes = {0}; }
+    Attributes() = default;
 
     Attributes(const drive_attr_t &attr) : m_attributes(attr) {}
 
@@ -78,7 +82,7 @@ public:
       return *this;
     }
 
-    Flags flags() const { return Flags(o_flags()); }
+    API_NO_DISCARD Flags flags() const { return Flags(o_flags()); }
 
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u32, attributes, o_flags)
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u32, attributes, start)
@@ -86,7 +90,7 @@ public:
 
   private:
     friend class Drive;
-    mutable drive_attr_t m_attributes;
+    mutable drive_attr_t m_attributes{};
   };
 
   Drive(
@@ -99,8 +103,8 @@ public:
   Drive(const Drive &a) = delete;
   Drive &operator=(const Drive &a) = delete;
 
-  Drive(Drive &&a) { DeviceAccess<Drive>::swap(a); }
-  Drive &operator=(Drive &&a) {
+  Drive(Drive &&a) noexcept { DeviceAccess<Drive>::swap(a); }
+  Drive &operator=(Drive &&a) noexcept {
     DeviceAccess<Drive>::swap(a);
     return *this;
   }
@@ -141,18 +145,15 @@ public:
   }
   Drive &protect() { return API_CONST_CAST_SELF(Drive, protect); }
 
-  bool is_busy() const {
+  API_NO_DISCARD bool is_busy() const {
     return ioctl(I_DRIVE_ISBUSY, nullptr).return_value() > 0;
   }
 
-  Info get_info() const {
+  API_NO_DISCARD Info get_info() const {
     drive_info_t info;
     ioctl(I_DRIVE_GETINFO, &info);
     return Info(info);
   }
-
-private:
-  int set_attributes(const drive_attr_t &attributes) const;
 };
 
 } // namespace hal

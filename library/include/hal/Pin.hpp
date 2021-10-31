@@ -13,9 +13,7 @@ class Pin : public DeviceAccess<Pin>, public GpioFlags {
 public:
   static mcu_pin_t from_string(const var::StringView port_pin) {
     var::StringViewList token_list = port_pin.split(".");
-    mcu_pin_t result;
-    result.port = 0xff;
-    result.pin = 0xff;
+    mcu_pin_t result = {.port = 0xff, .pin = 0xff};
     if (token_list.count() == 2) {
       result.port = token_list.at(0).to_integer();
       result.pin = token_list.at(1).to_integer();
@@ -23,26 +21,26 @@ public:
     return result;
   }
 
-  Pin(const var::StringView device,
-      u8 pin FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, fs::OpenMode::read_write()
-                                 FSAPI_LINK_INHERIT_DRIVER_LAST) {
-    m_pinmask = (1 << pin);
-  }
+  Pin(
+    const var::StringView device,
+    u8 pin FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceAccess(
+      device,
+      fs::OpenMode::read_write() FSAPI_LINK_INHERIT_DRIVER_LAST),
+      m_pinmask(1 << pin) {}
 
   explicit Pin(const mcu_pin_t pin FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess("/dev/pio" & var::NumberString(pin.port),
-                     fs::OpenMode::read_write()
-                         FSAPI_LINK_INHERIT_DRIVER_LAST) {
-    m_pinmask = (1 << pin.pin);
-  }
+    : DeviceAccess(
+      "/dev/pio" & var::NumberString(pin.port),
+      fs::OpenMode::read_write() FSAPI_LINK_INHERIT_DRIVER_LAST),
+      m_pinmask(1 << pin.pin) {}
 
-  Pin() {}
+  Pin() = default;
   Pin(const Pin &a) = delete;
   Pin &operator=(const Pin &a) = delete;
 
-  Pin(Pin &&a) { swap(a); }
-  Pin &operator=(Pin &&a) {
+  Pin(Pin &&a) noexcept { swap(a); }
+  Pin &operator=(Pin &&a) noexcept {
     swap(a);
     return *this;
   }
@@ -80,30 +78,32 @@ public:
   }
 
   const Pin &set_value(bool value = true) const {
-    return ioctl(value ? I_PIO_SETMASK : I_PIO_CLRMASK,
-                 MCU_INT_CAST(m_pinmask));
+    return ioctl(
+      value ? I_PIO_SETMASK : I_PIO_CLRMASK,
+      MCU_INT_CAST(m_pinmask));
   }
 
   Pin &set_value(bool value = true) {
     return API_CONST_CAST_SELF(Pin, set_value, value);
   }
 
-  bool get_value() const {
+  API_NO_DISCARD bool get_value() const {
     u32 value;
     ioctl(I_PIO_GET, &value);
     return (value & m_pinmask) != 0;
   }
 
-  bool is_floating(Flags o_restore_flags = Flags::is_float) const {
+  API_NO_DISCARD bool
+  is_floating(Flags o_restore_flags = Flags::is_float) const {
     bool result = true;
     set_input(Flags::is_pullup);
-    if (get_value() == false) {
+    if (!get_value()) {
       result = false; // pulled high but driven low
     }
 
     if (result) {
       set_input(Flags::is_pulldown);
-      if (get_value() == true) {
+      if (get_value()) {
         result = false; // pulled low but driven high
       }
     }
@@ -111,29 +111,31 @@ public:
     return result;
   }
 
-  enum class IsActiveHigh {
-    no, yes
-  };
+  enum class IsActiveHigh { no, yes };
 
   class PulseScope {
   public:
-    PulseScope(Pin &pin, IsActiveHigh is_active_high = IsActiveHigh::yes) : m_pin(&pin), m_is_active_high(is_active_high) {
+    explicit PulseScope(
+      Pin &pin,
+      IsActiveHigh is_active_high = IsActiveHigh::yes)
+      : m_pin(&pin), m_is_active_high(is_active_high) {
       m_pin->set_value(is_active_high == IsActiveHigh::yes);
     }
 
-    PulseScope(Pin * pin, IsActiveHigh is_active_high = IsActiveHigh::yes) : m_pin(pin), m_is_active_high(is_active_high) {
+    explicit PulseScope(
+      Pin *pin,
+      IsActiveHigh is_active_high = IsActiveHigh::yes)
+      : m_pin(pin), m_is_active_high(is_active_high) {
       m_pin->set_value(is_active_high == IsActiveHigh::yes);
     }
 
     PulseScope() = delete;
     PulseScope(const PulseScope &) = delete;
     PulseScope(PulseScope &&) = delete;
-    PulseScope& operator=(const PulseScope &) = delete;
-    PulseScope& operator=(PulseScope &&) = delete;
+    PulseScope &operator=(const PulseScope &) = delete;
+    PulseScope &operator=(PulseScope &&) = delete;
 
-    ~PulseScope(){
-      m_pin->set_value(m_is_active_high == IsActiveHigh::no);
-    }
+    ~PulseScope() { m_pin->set_value(m_is_active_high == IsActiveHigh::no); }
 
   private:
     Pin *m_pin;
@@ -141,7 +143,7 @@ public:
   };
 
 private:
-  u32 m_pinmask;
+  u32 m_pinmask{};
 };
 
 } // namespace hal

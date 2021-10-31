@@ -68,11 +68,12 @@ public:
       attributes.pin_assignment,
       scl)
 
-    /*! \details Access the slave address value. */
-    u8 slave_addr() const { return m_attributes.slave_addr[0].addr8[0]; }
-
-    /*! \details Accesses the 16-bit slave address value. */
-    u8 slave_addr16() const { return m_attributes.slave_addr[0].addr16; }
+    API_NO_DISCARD u8 slave_addr() const {
+      return m_attributes.slave_addr[0].addr8[0];
+    }
+    API_NO_DISCARD u8 slave_addr16() const {
+      return m_attributes.slave_addr[0].addr16;
+    }
 
     Attributes &set_flags(Flags value) {
       m_attributes.o_flags = static_cast<u32>(value);
@@ -86,66 +87,65 @@ public:
       frequency,
       freq)
 
-    /*! \details Sets the 7-bit slave address value. */
     Attributes &set_slave_addr(u8 addr) {
       m_attributes.slave_addr[0].addr8[0] = addr;
       return *this;
     }
 
-    /*! \details Sets the 16-bit slave address value. */
     Attributes &set_slave_addr16(u16 addr) {
       m_attributes.slave_addr[0].addr16 = addr;
       return *this;
     }
 
     i2c_attr_t *attributes() { return &m_attributes; }
-    const i2c_attr_t *attributes() const { return &m_attributes; }
+    API_NO_DISCARD const i2c_attr_t *attributes() const {
+      return &m_attributes;
+    }
 
   private:
     friend class I2C;
-    i2c_attr_t m_attributes = {};
+    i2c_attr_t m_attributes{};
   };
 
   class Info {
   public:
     Info() = default;
-    Info(const i2c_info_t &info) : m_info(info) {}
+    explicit Info(const i2c_info_t &info) : m_info(info) {}
     API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Info, u32, info, frequency, freq)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_events)
     API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(Info, u32, info, error, err)
-    Flags o_flags() const { return static_cast<Flags>(m_info.o_flags); }
+    API_NO_DISCARD Flags o_flags() const {
+      return static_cast<Flags>(m_info.o_flags);
+    }
 
   private:
     friend class I2C;
-    i2c_info_t m_info = {};
+    i2c_info_t m_info{};
   };
 
-  I2C(const var::StringView device,
-      fs::OpenMode open_mode =
-          DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  explicit I2C(
+    const var::StringView device,
+    fs::OpenMode open_mode
+    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  I2C() {}
+  I2C() = default;
   I2C(const I2C &a) = delete;
   I2C &operator=(const I2C &a) = delete;
 
-  I2C(I2C &&a) { swap(a); }
-  I2C &operator=(I2C &&a) {
+  I2C(I2C &&a) noexcept { swap(a); }
+  I2C &operator=(I2C &&a) noexcept {
     swap(a);
     return *this;
   }
 
-  const I2C &set_attributes() const {
-    return ioctl(I_I2C_SETATTR, nullptr);
-  }
+  const I2C &set_attributes() const { return ioctl(I_I2C_SETATTR, nullptr); }
 
-  I2C &set_attributes() {
-    return API_CONST_CAST_SELF(I2C, set_attributes);
-  }
+  I2C &set_attributes() { return API_CONST_CAST_SELF(I2C, set_attributes); }
 
   using ScanResult = var::Array<u8, 128>;
 
-  ScanResult scan() const;
+  API_NO_DISCARD ScanResult scan() const;
 
   const I2C &set_attributes(const Attributes &attributes) const {
     return ioctl(I_I2C_SETATTR, (void *)&attributes.m_attributes);
@@ -155,7 +155,8 @@ public:
     return API_CONST_CAST_SELF(I2C, set_attributes, attributes);
   }
 
-  const I2C &prepare(u8 slave_addr, Flags o_flags = Flags::prepare_ptr_data) const {
+  const I2C &
+  prepare(u8 slave_addr, Flags o_flags = Flags::prepare_ptr_data) const {
     Attributes attributes
       = Attributes().set_flags(o_flags).set_slave_addr(slave_addr);
     return ioctl(I_I2C_SETATTR, &attributes.m_attributes);
@@ -170,20 +171,18 @@ public:
     return ioctl(I_I2C_SETATTR, &attributes.m_attributes);
   }
 
-  I2C &reset() {
-    return API_CONST_CAST_SELF(I2C, reset);
-  }
+  I2C &reset() { return API_CONST_CAST_SELF(I2C, reset); }
 
-  int get_error() { return get_info().error(); }
+  API_NO_DISCARD int get_error() { return get_info().error(); }
 
-  Info get_info() {
+  API_NO_DISCARD Info get_info() {
     i2c_info_t info{};
     ioctl(I_I2C_GETINFO, &info);
     return Info(info);
   }
 
   class ModifyRegister {
-    API_AF(ModifyRegister, u32, location, 0);
+    API_AF(ModifyRegister, int, location, 0);
     API_AF(ModifyRegister, u8, bit, 0);
     API_AF(ModifyRegister, bool, value, false);
   };

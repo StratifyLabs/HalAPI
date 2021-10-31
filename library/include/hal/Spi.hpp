@@ -34,21 +34,22 @@ class Spi : public DeviceAccess<Spi>, public SpiFlags {
 public:
   class Info {
   public:
-    Info() { m_info = {0}; }
-    Info(const spi_info_t &info) { m_info = info; }
-    bool is_valid() const { return m_info.o_flags != 0; }
+    Info() = default;
+    explicit Info(const spi_info_t &info) { m_info = info; }
+    API_NO_DISCARD bool is_valid() const { return m_info.o_flags != 0; }
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_flags)
     API_READ_ACCESS_MEMBER_FUNDAMENTAL(Info, u32, info, o_events)
   private:
     friend class Spi;
-    spi_info_t m_info;
+    spi_info_t m_info{};
   };
 
   class Attributes {
   public:
     Attributes() {
-      set_flags(Flags::set_master | Flags::is_format_spi | Flags::is_mode0 |
-                Flags::set_half_duplex);
+      set_flags(
+        Flags::set_master | Flags::is_format_spi | Flags::is_mode0
+        | Flags::set_half_duplex);
       set_frequency(1000000);
       set_width(8);
       var::View(m_attributes.pin_assignment).fill<u8>(0xff);
@@ -59,8 +60,8 @@ public:
       return *this;
     }
 
-    Flags flags() const { return Flags(m_attributes.o_flags); }
-    u32 o_flags() const { return m_attributes.o_flags; }
+    API_NO_DISCARD Flags flags() const { return Flags(m_attributes.o_flags); }
+    API_NO_DISCARD u32 o_flags() const { return m_attributes.o_flags; }
 
     API_ACCESS_MEMBER_FUNDAMENTAL(Attributes, u8, attributes, width)
     API_ACCESS_MEMBER_FUNDAMENTAL_WITH_ALIAS(
@@ -91,24 +92,27 @@ public:
       cs)
 
     spi_attr_t *attributes() { return &m_attributes; }
-    const spi_attr_t *attributes() const { return &m_attributes; }
+    API_NO_DISCARD const spi_attr_t *attributes() const {
+      return &m_attributes;
+    }
 
   private:
     friend class Spi;
-    mutable spi_attr_t m_attributes;
+    mutable spi_attr_t m_attributes{};
   };
 
-  Spi(const var::StringView device,
-      fs::OpenMode open_mode =
-          DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-      : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
+  Spi(
+    const var::StringView device,
+    fs::OpenMode open_mode
+    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
+    : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  Spi() {}
+  Spi() = default;
   Spi(const Spi &a) = delete;
   Spi &operator=(const Spi &a) = delete;
 
-  Spi(Spi &&a) { DeviceAccess<Spi>::swap(a); }
-  Spi &operator=(Spi &&a) {
+  Spi(Spi &&a) noexcept { DeviceAccess<Spi>::swap(a); }
+  Spi &operator=(Spi &&a) noexcept {
     DeviceAccess<Spi>::swap(a);
     return *this;
   }
@@ -140,16 +144,13 @@ public:
     return set_attributes(Attributes().set_flags(Flags::deassert_cs));
   }
 
-  Info get_info() {
+  API_NO_DISCARD Info get_info() {
     spi_info_t info;
     ioctl(I_SPI_GETINFO, &info);
     return Info(info);
   }
 
   Spi &swap(u32 value) { return ioctl(I_SPI_SWAP, MCU_INT_CAST(value)); }
-
-
-
 
 private:
 };
