@@ -2,6 +2,7 @@
 
 ## New Features
 
+- Update `CMakeLists.txt` to require setup of SDK in a super-project
 - add `.clang-format` file
 - Add printer operator for `I2C::ScanResult`
 - Add `Pin::PulseScope` for using RAII to set and reset a pin
