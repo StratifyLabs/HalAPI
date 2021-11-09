@@ -1,3 +1,16 @@
+# Version 1.2.0
+
+## New Features
+
+- Update `CMakeLists.txt` to require setup of SDK in a super-project
+- add `.clang-format` file
+- Add printer operator for `I2C::ScanResult`
+- Add `Pin::PulseScope` for using RAII to set and reset a pin
+
+## Bug Fixes
+
+- Reformat and Tidy
+
 # Version 1.1.0
 
 ## New Features
@@ -11,7 +24,7 @@
 
 ## Bug Fixes
 
-- Reformat and Tidy
+- None
 
 # Version 1.0.0
 
