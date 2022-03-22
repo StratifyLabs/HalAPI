@@ -9,6 +9,7 @@
 
 ## Bug Fixes
 
+- Add `writeBlockCount` when printing `hal::Drive::Info`
 - Reformat and Tidy
 
 # Version 1.1.0

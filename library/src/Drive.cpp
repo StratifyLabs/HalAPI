@@ -15,7 +15,8 @@ printer::operator<<(printer::Printer &printer, const hal::Drive::Info &a) {
     .key("events", var::NumberString(a.o_events(), "0x%lX"))
     .key("flags", var::NumberString(a.o_flags(), "0x%lX"))
     .key("pageProgramSize", var::NumberString(a.page_program_size()))
-    .key("writeBlockSize", var::NumberString(a.write_block_size()));
+    .key("writeBlockSize", var::NumberString(a.write_block_size()))
+    .key("writeBlockCount", var::NumberString(a.num_write_blocks()));
 }
 
 printer::Printer &printer::operator<<(
