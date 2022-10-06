@@ -1,8 +1,7 @@
-
-set(LIBRARIES SosAPI FsAPI ChronoAPI VarAPI ThreadAPI)
-
-
-api_add_api_library(${PROJECT_NAME} "${LIBRARIES}")
+set(LIBRARIES SosAPI FsAPI ThreadAPI)
+api2_add_library(
+  NAME ${PROJECT_NAME}
+  DEPENDENCIES ${LIBRARIES})
 
 
 
