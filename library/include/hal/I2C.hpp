@@ -139,7 +139,7 @@ public:
     return *this;
   }
 
-  const I2C &set_attributes() const { return ioctl(I_I2C_SETATTR, nullptr); }
+  const I2C &set_attributes() const { return ioctl(I_I2C_SETATTR); }
 
   I2C &set_attributes() { return API_CONST_CAST_SELF(I2C, set_attributes); }
 

@@ -58,7 +58,7 @@ u32 Flash::get_page_from_address(u32 address) const {
 }
 
 u32 Flash::get_size() const {
-  return ioctl(I_FLASH_GETSIZE, nullptr).return_value();
+  return ioctl(I_FLASH_GETSIZE).return_value();
 }
 
 const Flash &Flash::write_page(u32 address, var::View data) const {

@@ -153,7 +153,7 @@ public:
     return *this;
   }
 
-  const I2S &set_attributes() const { return ioctl(I_I2S_SETATTR, nullptr); }
+  const I2S &set_attributes() const { return ioctl(I_I2S_SETATTR); }
   I2S &set_attributes() { return API_CONST_CAST_SELF(I2S, set_attributes); }
 
   const I2S &set_attributes(const Attributes &attributes) const {
@@ -170,13 +170,10 @@ public:
     return Info(info);
   }
 
-  const I2S &mute() const { return ioctl(I_I2S_MUTE, nullptr); }
-
-  I2S &mute() { return ioctl(I_I2S_MUTE, nullptr); }
-
-  const I2S &unmute() const { return ioctl(I_I2S_UNMUTE, nullptr); }
-
-  I2S &unmute() { return ioctl(I_I2S_UNMUTE, nullptr); }
+  const I2S &mute() const { return ioctl(I_I2S_MUTE); }
+  I2S &mute() { return ioctl(I_I2S_MUTE); }
+  const I2S &unmute() const { return ioctl(I_I2S_UNMUTE); }
+  I2S &unmute() { return ioctl(I_I2S_UNMUTE); }
 
 private:
 };

@@ -162,14 +162,14 @@ public:
   }
 
   const Pwm &enable() const {
-    ioctl(I_PWM_ENABLE, nullptr);
+    ioctl(I_PWM_ENABLE);
     return *this;
   }
 
   Pwm &enable() { return API_CONST_CAST_SELF(Pwm, enable); }
 
   const Pwm &disable() const {
-    ioctl(I_PWM_DISABLE, nullptr);
+    ioctl(I_PWM_DISABLE);
     return *this;
   }
 

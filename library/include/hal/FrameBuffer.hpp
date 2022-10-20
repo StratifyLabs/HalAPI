@@ -89,7 +89,7 @@ public:
     return ioctl(I_FFIFO_SETATTR, &attr.m_attributes);
   }
 
-  const FrameBuffer &flush() const { return ioctl(I_FFIFO_FLUSH, nullptr); }
+  const FrameBuffer &flush() const { return ioctl(I_FFIFO_FLUSH); }
 
   API_NO_DISCARD Info get_info() const {
     ffifo_info_t info;

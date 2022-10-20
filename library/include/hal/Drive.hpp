@@ -109,9 +109,9 @@ public:
     return *this;
   }
 
-  Drive &set_attributes() { return ioctl(I_DRIVE_SETATTR, nullptr); }
+  Drive &set_attributes() { return ioctl(I_DRIVE_SETATTR); }
   const Drive &set_attributes() const {
-    return ioctl(I_DRIVE_SETATTR, nullptr);
+    return ioctl(I_DRIVE_SETATTR);
   }
 
   Drive &set_attributes(const Attributes &attributes) {
@@ -146,7 +146,7 @@ public:
   Drive &protect() { return API_CONST_CAST_SELF(Drive, protect); }
 
   API_NO_DISCARD bool is_busy() const {
-    return ioctl(I_DRIVE_ISBUSY, nullptr).return_value() > 0;
+    return ioctl(I_DRIVE_ISBUSY).return_value() > 0;
   }
 
   API_NO_DISCARD Info get_info() const {

@@ -148,8 +148,8 @@ public:
     return *this;
   }
 
-  Adc &set_attributes() { return ioctl(I_ADC_SETATTR, nullptr); }
-  const Adc &set_attributes() const { return ioctl(I_ADC_SETATTR, nullptr); }
+  Adc &set_attributes() { return ioctl(I_ADC_SETATTR); }
+  const Adc &set_attributes() const { return ioctl(I_ADC_SETATTR); }
 
   Adc &set_attributes(const Attributes &attributes) {
     return ioctl(I_ADC_SETATTR, &attributes.m_attributes);

@@ -140,8 +140,8 @@ public:
     return *this;
   }
 
-  Timer &set_attributes() { return ioctl(I_TMR_SETATTR, nullptr); }
-  const Timer &set_attributes() const { return ioctl(I_TMR_SETATTR, nullptr); }
+  Timer &set_attributes() { return ioctl(I_TMR_SETATTR); }
+  const Timer &set_attributes() const { return ioctl(I_TMR_SETATTR); }
 
   Timer &set_attributes(const Attributes &attributes) {
     return ioctl(I_TMR_SETATTR, &attributes.m_attributes);
@@ -162,11 +162,11 @@ public:
     return value;
   }
 
-  Timer &enable() { return ioctl(I_TMR_ENABLE, nullptr); }
-  const Timer &enable() const { return ioctl(I_TMR_ENABLE, nullptr); }
+  Timer &enable() { return ioctl(I_TMR_ENABLE); }
+  const Timer &enable() const { return ioctl(I_TMR_ENABLE); }
 
-  Timer &disable() { return ioctl(I_TMR_DISABLE, nullptr); }
-  const Timer &disable() const { return ioctl(I_TMR_DISABLE, nullptr); }
+  Timer &disable() { return ioctl(I_TMR_DISABLE); }
+  const Timer &disable() const { return ioctl(I_TMR_DISABLE); }
 
   Timer &set_channel(const mcu_channel_t &channel) {
     return ioctl(I_TMR_SETCHANNEL, (void *)&channel);

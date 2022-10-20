@@ -117,11 +117,11 @@ public:
   }
 
   API_NO_DISCARD int get_version() const {
-    return ioctl(I_UART_GETVERSION, nullptr).return_value();
+    return ioctl(I_UART_GETVERSION).return_value();
   }
 
-  Uart &set_attributes() { return ioctl(I_UART_SETATTR, nullptr); }
-  const Uart &set_attributes() const { return ioctl(I_UART_SETATTR, nullptr); }
+  Uart &set_attributes() { return ioctl(I_UART_SETATTR); }
+  const Uart &set_attributes() const { return ioctl(I_UART_SETATTR); }
 
   Uart &set_attributes(const Attributes &attr) {
     return ioctl(I_UART_SETATTR, (void *)&attr.m_attributes);
@@ -134,17 +134,17 @@ public:
   Uart &put(char c) { return ioctl(I_UART_PUT, &c); }
   const Uart &put(char c) const { return ioctl(I_UART_PUT, &c); }
 
-  Uart &flush() { return ioctl(I_UART_FLUSH, nullptr); }
-  const Uart &flush() const { return ioctl(I_UART_FLUSH, nullptr); }
+  Uart &flush() { return ioctl(I_UART_FLUSH); }
+  const Uart &flush() const { return ioctl(I_UART_FLUSH); }
 
   API_NO_DISCARD char get() const {
-    char c;
+    auto c = '\0';
     ioctl(I_UART_GET, &c);
     return c;
   }
 
   API_NO_DISCARD Info get_info() const {
-    uart_info_t info = {};
+    auto info = uart_info_t{};
     ioctl(I_UART_GETINFO, &info);
     return Info(info);
   }

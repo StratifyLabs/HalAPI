@@ -130,11 +130,11 @@ public:
   }
 
   API_NO_DISCARD int get_version() const {
-    return ioctl(I_USB_GETVERSION, nullptr).return_value();
+    return ioctl(I_USB_GETVERSION).return_value();
   }
 
-  Usb &set_attributes() { return ioctl(I_USB_SETATTR, nullptr); }
-  const Usb &set_attributes() const { return ioctl(I_USB_SETATTR, nullptr); }
+  Usb &set_attributes() { return ioctl(I_USB_SETATTR); }
+  const Usb &set_attributes() const { return ioctl(I_USB_SETATTR); }
 
   Usb &set_attributes(const Attributes &attr) {
     return ioctl(I_USB_SETATTR, (void *)&attr.m_attributes);
@@ -175,7 +175,7 @@ public:
   Usb &unconfigure() { return API_CONST_CAST_SELF(Usb, unconfigure); }
 
   API_NO_DISCARD bool is_connected() const {
-    return ioctl(I_USB_ISCONNECTED, nullptr).return_value() != 0;
+    return ioctl(I_USB_ISCONNECTED).return_value() != 0;
   }
 
   API_NO_DISCARD Info get_info() const {

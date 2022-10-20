@@ -6,23 +6,24 @@
 #include "hal/I2C.hpp"
 
 using namespace hal;
+using namespace var;
 
 printer::Printer &
 printer::operator<<(printer::Printer &printer, const hal::I2C::Attributes &a) {
-  printer.key("frequency", var::NumberString(a.frequency()));
+  printer.key("frequency", NumberString(a.frequency()));
   printer.key(
     "scl",
-    var::NumberString().format("%d.%d", a.scl().port, a.scl().pin));
+    NumberString().format("%d.%d", a.scl().port, a.scl().pin));
   printer.key(
     "sda",
-    var::NumberString().format("%d.%d", a.sda().port, a.sda().pin));
+    NumberString().format("%d.%d", a.sda().port, a.sda().pin));
   return printer;
 }
 
 printer::Printer &
 printer::operator<<(printer::Printer &printer, const hal::I2C::Info &a) {
-  printer.key("frequency", var::NumberString(a.frequency()));
-  printer.key("error", var::NumberString(a.error()));
+  printer.key("frequency", NumberString(a.frequency()));
+  printer.key("error", NumberString(a.error()));
   return printer;
 }
 
@@ -32,7 +33,7 @@ printer::operator<<(printer::Printer &printer, const hal::I2C::ScanResult &a) {
   for (const auto value : a) {
     if (value != 0) {
       is_one_value_present = true;
-      printer.key_bool(var::NumberString(value, "0x%02x"), true);
+      printer.key_bool(NumberString(value, "0x%02x"), true);
     }
   }
   if (!is_one_value_present) {
@@ -46,8 +47,8 @@ I2C::ScanResult I2C::scan() const {
   result.fill(0);
   for (u8 addr = 1; addr < 128; addr++) {
     char c = 0;
-    api::ErrorGuard eg;
-    prepare(addr, Flags::prepare_data).read(&c, 1);
+    api::ErrorScope es;
+    prepare(addr, Flags::prepare_data).read(View(&c));
     if (return_value() == 1) {
       result.at(addr) = addr;
     }

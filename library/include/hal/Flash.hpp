@@ -68,7 +68,7 @@ public:
   }
 
   API_NO_DISCARD int get_version() const {
-    return ioctl(I_FLASH_GETVERSION, nullptr).return_value();
+    return ioctl(I_FLASH_GETVERSION).return_value();
   }
 
   const Flash &erase_device() const;
