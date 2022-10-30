@@ -76,14 +76,6 @@ public:
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   FrameBuffer() = default;
-  FrameBuffer(const FrameBuffer &a) = delete;
-  FrameBuffer &operator=(const FrameBuffer &a) = delete;
-
-  FrameBuffer(FrameBuffer &&a) noexcept { swap(a); }
-  FrameBuffer &operator=(FrameBuffer &&a) noexcept {
-    swap(a);
-    return *this;
-  }
 
   const FrameBuffer &set_attributes(Attributes &attr) const {
     return ioctl(I_FFIFO_SETATTR, &attr.m_attributes);

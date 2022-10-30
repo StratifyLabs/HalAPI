@@ -132,21 +132,12 @@ public:
     mutable adc_attr_t m_attributes;
   };
 
+  Adc() = default;
   Adc(
     const var::StringView device,
     fs::OpenMode open_mode
     = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
-
-  Adc() = default;
-  Adc(const Adc &a) = delete;
-  Adc &operator=(const Adc &a) = delete;
-
-  Adc(Adc &&a) noexcept { DeviceAccess<Adc>::swap(a); }
-  Adc &operator=(Adc &&a) noexcept {
-    DeviceAccess<Adc>::swap(a);
-    return *this;
-  }
 
   Adc &set_attributes() { return ioctl(I_ADC_SETATTR); }
   const Adc &set_attributes() const { return ioctl(I_ADC_SETATTR); }

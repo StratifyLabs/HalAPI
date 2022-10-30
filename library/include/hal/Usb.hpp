@@ -120,14 +120,6 @@ public:
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   Usb() = default;
-  Usb(const Usb &a) = delete;
-  Usb &operator=(const Usb &a) = delete;
-
-  Usb(Usb &&a) { swap(a); }
-  Usb &operator=(Usb &&a) {
-    swap(a);
-    return *this;
-  }
 
   API_NO_DISCARD int get_version() const {
     return ioctl(I_USB_GETVERSION).return_value();

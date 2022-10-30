@@ -114,14 +114,6 @@ public:
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   FrameStream() = default;
-  FrameStream(const FrameStream &a) = delete;
-  FrameStream &operator=(const FrameStream &a) = delete;
-
-  FrameStream(FrameStream &&a) noexcept { swap(a); }
-  FrameStream &operator=(FrameStream &&a) noexcept {
-    swap(a);
-    return *this;
-  }
 
   const FrameStream &start() const {
     return set_attributes(Attributes().set_start());

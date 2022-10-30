@@ -130,14 +130,6 @@ public:
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   Pwm() = default;
-  Pwm(const Pwm &a) = delete;
-  Pwm &operator=(const Pwm &a) = delete;
-
-  Pwm(Pwm &&a) noexcept { DeviceAccess<Pwm>::swap(a); }
-  Pwm &operator=(Pwm &&a) noexcept {
-    DeviceAccess<Pwm>::swap(a);
-    return *this;
-  }
 
   const Pwm &set_attributes(const Attributes &attr) const {
     ioctl(I_PWM_SETATTR, (void *)&attr);

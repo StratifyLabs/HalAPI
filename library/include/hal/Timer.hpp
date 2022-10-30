@@ -131,14 +131,6 @@ public:
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   Timer() = default;
-  Timer(const Timer &a) = delete;
-  Timer &operator=(const Timer &a) = delete;
-
-  Timer(Timer &&a) noexcept { DeviceAccess<Timer>::swap(a); }
-  Timer &operator=(Timer &&a) noexcept {
-    DeviceAccess<Timer>::swap(a);
-    return *this;
-  }
 
   Timer &set_attributes() { return ioctl(I_TMR_SETATTR); }
   const Timer &set_attributes() const { return ioctl(I_TMR_SETATTR); }
