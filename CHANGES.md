@@ -1,3 +1,10 @@
+# Version 1.3.1 (unreleased)
+
+## Bug Fixes
+
+- Add version info to CMakeList.txt
+- Add version dependency info
+
 # Version 1.3.0
 
 ## New Features
