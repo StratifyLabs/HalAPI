@@ -58,14 +58,6 @@ public:
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   Flash() = default;
-  Flash(const Flash &a) = delete;
-  Flash &operator=(const Flash &a) = delete;
-
-  Flash(Flash &&a) noexcept { DeviceAccess<Flash>::swap(a); }
-  Flash &operator=(Flash &&a) noexcept {
-    DeviceAccess<Flash>::swap(a);
-    return *this;
-  }
 
   API_NO_DISCARD int get_version() const {
     return ioctl(I_FLASH_GETVERSION).return_value();

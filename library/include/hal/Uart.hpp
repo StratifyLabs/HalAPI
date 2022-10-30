@@ -107,14 +107,6 @@ public:
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   Uart() = default;
-  Uart(const Uart &a) = delete;
-  Uart &operator=(const Uart &a) = delete;
-
-  Uart(Uart &&a) noexcept { swap(a); }
-  Uart &operator=(Uart &&a) noexcept {
-    swap(a);
-    return *this;
-  }
 
   API_NO_DISCARD int get_version() const {
     return ioctl(I_UART_GETVERSION).return_value();

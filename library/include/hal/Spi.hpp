@@ -108,14 +108,6 @@ public:
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   Spi() = default;
-  Spi(const Spi &a) = delete;
-  Spi &operator=(const Spi &a) = delete;
-
-  Spi(Spi &&a) noexcept { DeviceAccess<Spi>::swap(a); }
-  Spi &operator=(Spi &&a) noexcept {
-    DeviceAccess<Spi>::swap(a);
-    return *this;
-  }
 
   Spi &set_attributes() { return ioctl(I_SPI_SETATTR); }
   const Spi &set_attributes() const { return ioctl(I_SPI_SETATTR); }

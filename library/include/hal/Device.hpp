@@ -9,37 +9,22 @@
 #include "fs/Aio.hpp"
 #include "fs/File.hpp"
 
-#if defined __link
-#define DEVICE_OPEN_MODE (fs::OpenMode::read_write().set_non_blocking())
-#else
-#define DEVICE_OPEN_MODE fs::OpenMode::read_write()
-#endif
 namespace hal {
 
 class DeviceObject : public api::ExecutionContext {
 public:
+#if defined __link
+#define DEVICE_OPEN_MODE (fs::OpenMode::read_write().set_non_blocking())
+  using DeviceFile = sos::Link::File;
+#else
+#define DEVICE_OPEN_MODE fs::OpenMode::read_write()
+  using DeviceFile = fs::File;
+#endif
+
   class Channel {
     API_ACCESS_FUNDAMENTAL(Channel, u32, location, 0);
     API_ACCESS_FUNDAMENTAL(Channel, u32, value, 0);
   };
-
-  DeviceObject() {}
-
-  explicit DeviceObject(
-    var::StringView path,
-    fs::OpenMode open_mode
-    = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-    : m_file(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
-
-  API_NO_DISCARD bool is_valid() const { return m_file.is_valid(); }
-  DeviceObject(const DeviceObject &a) = delete;
-  DeviceObject &operator=(const DeviceObject &a) = delete;
-
-  DeviceObject(DeviceObject &&a) noexcept { swap(a); }
-  DeviceObject &operator=(DeviceObject &&a) noexcept {
-    swap(a);
-    return *this;
-  }
 
 #if !defined __link
 
@@ -48,48 +33,40 @@ public:
     API_AC(Transfer, var::View, destination);
   };
 
-  API_NO_DISCARD const fs::File &file() const { return m_file; }
-  fs::File &file() { return m_file; }
-
 protected:
-  void
-  set_interrupt_priority(int priority, int request = I_MCU_SETACTION) const;
+  static void set_interrupt_priority_implementation(
+    const DeviceFile &file,
+    int priority,
+    int request = I_MCU_SETACTION);
+  static void read_implementation(const DeviceFile &file, fs::Aio &aio);
+  static void write_implementation(const DeviceFile &file, fs::Aio &aio);
 
-  void set_signal_action(
+  static void
+  cancel_read_implementation(const DeviceFile &file, int channel = 0);
+  static void
+  cancel_write_implementation(const DeviceFile &file, int channel = 0);
+  static void
+  cancel_implementation(const DeviceFile &file, int channel, int o_events);
+
+  static void
+  transfer_implementation(const DeviceFile &file, const Transfer &options);
+
+  static void set_signal_action_implementation(
+    const DeviceFile &file,
     const DeviceSignal &signal,
-    const DeviceSignal::CreateAction &options) {
-    mcu_action_t action = signal.create_action(options);
-    m_file.ioctl(I_MCU_SETACTION, &action);
-  }
-
-  void read(fs::Aio &aio) const;
-  void write(fs::Aio &aio) const;
-
-  void cancel_read(int channel = 0) const;
-  void cancel_write(int channel = 0) const;
-  void cancel(int channel, int o_events) const;
-
-  void transfer(const Transfer &options) const;
+    const DeviceSignal::CreateAction &options);
 
 #endif
-
-protected:
-#if defined __link
-  sos::Link::File m_file;
-#else
-  fs::File m_file;
-#endif
-
-  void swap(DeviceObject &a) { std::swap(m_file, a.m_file); }
 };
 
 template <class Derived>
-class DeviceAccess : public DeviceObject, public fs::FileMemberAccess<Derived> {
-public:
-  DeviceAccess() : fs::FileMemberAccess<Derived>(m_file){};
+class DeviceAccess
+  : public DeviceObject,
+    public fs::FileMemberAccess<Derived, DeviceObject::DeviceFile> {
+  using FileBase = fs::FileMemberAccess<Derived, DeviceObject::DeviceFile>;
 
-  DeviceAccess(DeviceAccess &&a) noexcept = default;
-  DeviceAccess &operator=(DeviceAccess &&a) noexcept = default;
+public:
+  DeviceAccess() = default;
 
   explicit DeviceAccess(
     const var::StringView path,
@@ -98,87 +75,102 @@ public:
                                .set_non_blocking()
 #endif
                                  FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
-    : DeviceObject(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST),
-      fs::FileMemberAccess<Derived>(m_file) {
+    : fs::FileMemberAccess<Derived, DeviceFile>(
+      path,
+      open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {
   }
 
-  API_NO_DISCARD int fileno() const { return m_file.fileno(); }
+  using FileBase::file;
+  using FileBase::ioctl;
+  using FileBase::read;
+  using FileBase::seek;
+  using FileBase::write;
 
-  Derived &&move() { return static_cast<Derived &&>(std::move(*this)); }
+  API_NO_DISCARD int fileno() const { return file().fileno(); }
+  API_NO_DISCARD bool is_valid() const { return file().is_valid(); }
 
 #if !defined __link
-  const Derived &cancel(int channel, int o_events) const {
-    DeviceObject::cancel(channel, o_events);
-    return static_cast<const Derived &>(*this);
+#define HALAPI_DEVICE_FUNCTION_GROUP(QUAL)                                     \
+  auto QUAL cancel(int channel, int o_events) QUAL {                           \
+    cancel_implementation(file(), channel, o_events);                          \
+    return static_cast<Derived QUAL>(*this);                                   \
   }
+  HALAPI_DEVICE_FUNCTION_GROUP(const &)
+  HALAPI_DEVICE_FUNCTION_GROUP(&)
+  HALAPI_DEVICE_FUNCTION_GROUP(&&)
+#undef HALAPI_DEVICE_FUNCTION_GROUP
 
-  Derived &cancel(int channel, int o_events) {
-    DeviceObject::cancel(channel, o_events);
-    return static_cast<const Derived &>(*this);
+#define HALAPI_DEVICE_FUNCTION_GROUP(QUAL)                                     \
+  auto QUAL cancel_read(int channel = 0) QUAL {                                \
+    cancel_read_implementation(file(), channel);                               \
+    return static_cast<Derived QUAL>(*this);                                   \
   }
+  HALAPI_DEVICE_FUNCTION_GROUP(const &)
+  HALAPI_DEVICE_FUNCTION_GROUP(&)
+  HALAPI_DEVICE_FUNCTION_GROUP(&&)
+#undef HALAPI_DEVICE_FUNCTION_GROUP
 
-  const Derived &cancel_read(int channel = 0) const {
-    DeviceObject::cancel_read(channel);
-    return static_cast<const Derived &>(*this);
+#define HALAPI_DEVICE_FUNCTION_GROUP(QUAL)                                     \
+  auto QUAL cancel_write(int channel = 0) QUAL {                               \
+    cancel_write_implementation(file(), channel);                              \
+    return static_cast<Derived QUAL>(*this);                                   \
   }
+  HALAPI_DEVICE_FUNCTION_GROUP(const &)
+  HALAPI_DEVICE_FUNCTION_GROUP(&)
+  HALAPI_DEVICE_FUNCTION_GROUP(&&)
+#undef HALAPI_DEVICE_FUNCTION_GROUP
 
-  Derived &cancel_read(int channel = 0) {
-    DeviceObject::cancel_read(channel);
-    return static_cast<const Derived &>(*this);
+#define HALAPI_DEVICE_FUNCTION_GROUP(QUAL)                                     \
+  auto QUAL set_interrupt_priority(int priority) QUAL {                        \
+    set_interrupt_priority_implementation(file(), priority);                   \
+    return static_cast<Derived QUAL>(*this);                                   \
   }
+  HALAPI_DEVICE_FUNCTION_GROUP(const &)
+  HALAPI_DEVICE_FUNCTION_GROUP(&)
+  HALAPI_DEVICE_FUNCTION_GROUP(&&)
+#undef HALAPI_DEVICE_FUNCTION_GROUP
 
-  const Derived &cancel_write(int channel = 0) const {
-    DeviceObject::cancel_write(channel);
-    return static_cast<const Derived &>(*this);
+#define HALAPI_DEVICE_FUNCTION_GROUP(QUAL)                                     \
+  auto QUAL set_signal_action(                                                 \
+    const DeviceSignal &signal,                                                \
+    const DeviceSignal::CreateAction &options) QUAL {                          \
+    set_signal_action_implementation(file(), signal, options);                 \
+    return static_cast<Derived QUAL>(*this);                                   \
   }
+  HALAPI_DEVICE_FUNCTION_GROUP(const &)
+  HALAPI_DEVICE_FUNCTION_GROUP(&)
+  HALAPI_DEVICE_FUNCTION_GROUP(&&)
+#undef HALAPI_DEVICE_FUNCTION_GROUP
 
-  Derived &cancel_write(int channel = 0) {
-    DeviceObject::cancel_write(channel);
-    return static_cast<Derived &>(*this);
+#define HALAPI_DEVICE_FUNCTION_GROUP(QUAL)                                     \
+  auto QUAL read(fs::Aio &aio) QUAL {                                          \
+    read_implementation(FileBase::file(), aio);                                \
+    return static_cast<Derived QUAL>(*this);                                   \
   }
+  HALAPI_DEVICE_FUNCTION_GROUP(const &)
+  HALAPI_DEVICE_FUNCTION_GROUP(&)
+  HALAPI_DEVICE_FUNCTION_GROUP(&&)
+#undef HALAPI_DEVICE_FUNCTION_GROUP
 
-  const Derived &set_interrupt_priority(int priority) const {
-    DeviceObject::set_interrupt_priority(priority);
-    return static_cast<Derived &>(*this);
+#define HALAPI_DEVICE_FUNCTION_GROUP(QUAL)                                     \
+  auto QUAL write(fs::Aio &aio) QUAL {                                         \
+    write_implementation(FileBase::file(), aio);                               \
+    return static_cast<Derived QUAL>(*this);                                   \
   }
+  HALAPI_DEVICE_FUNCTION_GROUP(const &)
+  HALAPI_DEVICE_FUNCTION_GROUP(&)
+  HALAPI_DEVICE_FUNCTION_GROUP(&&)
+#undef HALAPI_DEVICE_FUNCTION_GROUP
 
-  Derived &set_interrupt_priority(int priority) {
-    DeviceObject::set_interrupt_priority(priority);
-    return static_cast<Derived &>(*this);
+#define HALAPI_DEVICE_FUNCTION_GROUP(QUAL)                                     \
+  auto QUAL transfer(const Transfer &options) QUAL {                           \
+    transfer_implementation(FileBase::file(), options);                        \
+    return static_cast<Derived QUAL>(*this);                                   \
   }
-
-  using fs::FileMemberAccess<Derived>::read;
-  using fs::FileMemberAccess<Derived>::write;
-
-  const Derived &read(fs::Aio &aio) const {
-    DeviceObject::read(aio);
-    return static_cast<const Derived &>(*this);
-  }
-
-  Derived &read(fs::Aio &aio) {
-    DeviceObject::read(aio);
-    return static_cast<Derived &>(*this);
-  }
-
-  const Derived &write(fs::Aio &aio) const {
-    DeviceObject::write(aio);
-    return static_cast<const Derived &>(*this);
-  }
-
-  Derived &write(fs::Aio &aio) {
-    DeviceObject::write(aio);
-    return static_cast<Derived &>(*this);
-  }
-
-  const Derived &transfer(const Transfer &options) const {
-    DeviceObject::transfer(options);
-    return static_cast<const Derived &>(*this);
-  }
-
-  Derived &transfer(const Transfer &options) {
-    DeviceObject::transfer(options);
-    return static_cast<Derived &>(*this);
-  }
+  HALAPI_DEVICE_FUNCTION_GROUP(const &)
+  HALAPI_DEVICE_FUNCTION_GROUP(&)
+  HALAPI_DEVICE_FUNCTION_GROUP(&&)
+#undef HALAPI_DEVICE_FUNCTION_GROUP
 #endif
 };
 
@@ -190,12 +182,6 @@ public:
     fs::OpenMode open_mode
     = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
     : DeviceAccess(path, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
-
-  Device(Device &&a) noexcept { swap(a); }
-  Device &operator=(Device &&a) noexcept {
-    swap(a);
-    return *this;
-  }
 };
 
 template <int VersionRequest> class DeviceType {

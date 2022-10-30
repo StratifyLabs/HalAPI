@@ -144,14 +144,7 @@ public:
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   I2S() = default;
-  I2S(const I2S &a) = delete;
-  I2S &operator=(const I2S &a) = delete;
 
-  I2S(I2S &&a) noexcept { swap(a); }
-  I2S &operator=(I2S &&a) noexcept {
-    swap(a);
-    return *this;
-  }
 
   const I2S &set_attributes() const { return ioctl(I_I2S_SETATTR); }
   I2S &set_attributes() { return API_CONST_CAST_SELF(I2S, set_attributes); }

@@ -130,14 +130,6 @@ public:
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
   I2C() = default;
-  I2C(const I2C &a) = delete;
-  I2C &operator=(const I2C &a) = delete;
-
-  I2C(I2C &&a) noexcept { swap(a); }
-  I2C &operator=(I2C &&a) noexcept {
-    swap(a);
-    return *this;
-  }
 
   const I2C &set_attributes() const { return ioctl(I_I2C_SETATTR); }
 

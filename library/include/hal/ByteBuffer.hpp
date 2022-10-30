@@ -85,21 +85,13 @@ public:
     fifo_attr_t m_attributes{};
   };
 
+  ByteBuffer() = default;
   ByteBuffer(
     const var::StringView device,
     fs::OpenMode open_mode
     = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  ByteBuffer() {}
-  ByteBuffer(const ByteBuffer &a) = delete;
-  ByteBuffer &operator=(const ByteBuffer &a) = delete;
-
-  ByteBuffer(ByteBuffer &&a) noexcept { swap(a); }
-  ByteBuffer &operator=(ByteBuffer &&a) noexcept {
-    swap(a);
-    return *this;
-  }
 
   const ByteBuffer &set_attributes(Attributes &attr) const {
     return ioctl(I_FIFO_SETATTR, &attr.m_attributes);

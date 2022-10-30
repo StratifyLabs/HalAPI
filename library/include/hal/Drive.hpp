@@ -99,16 +99,7 @@ public:
     = DEVICE_OPEN_MODE FSAPI_LINK_DECLARE_DRIVER_NULLPTR_LAST)
     : DeviceAccess(device, open_mode FSAPI_LINK_INHERIT_DRIVER_LAST) {}
 
-  Drive() {}
-  Drive(const Drive &a) = delete;
-  Drive &operator=(const Drive &a) = delete;
-
-  Drive(Drive &&a) noexcept { DeviceAccess<Drive>::swap(a); }
-  Drive &operator=(Drive &&a) noexcept {
-    DeviceAccess<Drive>::swap(a);
-    return *this;
-  }
-
+  Drive() = default;
   Drive &set_attributes() { return ioctl(I_DRIVE_SETATTR); }
   const Drive &set_attributes() const {
     return ioctl(I_DRIVE_SETATTR);
